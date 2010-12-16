@@ -77,6 +77,8 @@ public class Alarm extends javax.swing.JFrame {
 		
 		applicationProperties = new ApplicationProperties("alarme");
 		
+		carregarHorariosSalvos();
+		
 		timeChecker = new TimeChecker();
 		timeChecker.setDaemon(true);
 		timeChecker.start();
@@ -86,6 +88,20 @@ public class Alarm extends javax.swing.JFrame {
 		beep.start();
 	}
 	
+	private void carregarHorariosSalvos() {
+		for (int row = 0; row < tblHorarios.getRowCount(); row++) {
+			String property = applicationProperties.getProperty("p." + row, "00:00");
+			tblHorarios.setValueAt(property, row, COL_HORA);
+		}		
+	}
+	
+	private void salvarHorarios() {
+		for (int row = 0; row < tblHorarios.getRowCount(); row++) {
+			applicationProperties.setProperty("p." + row, tblHorarios.getValueAt(row, COL_HORA) + "");
+		}
+	}
+	
+
 	/**
 	 * Verifica se é hora de alarmar.
 	 * @return a hora de alarme ou <code>null</code>
@@ -315,9 +331,7 @@ public class Alarm extends javax.swing.JFrame {
 	}
 	
 	private void thisWindowClosed(WindowEvent evt) {
-		for (int row = 0; row < tblHorarios.getRowCount(); row++) {
-			applicationProperties.setProperty("p." + row, tblHorarios.getValueAt(row, COL_HORA) + "");
-		}		
+		salvarHorarios();		
 	}
 	
 	/**
