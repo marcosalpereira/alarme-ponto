@@ -27,8 +27,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
@@ -60,7 +58,7 @@ public class Alarm extends javax.swing.JFrame {
 	private JTable tblHorarios;
 	private JLabel lblMessage;
 	private JButton btnOk;
-	private JTextField txtUser;
+	private JLabel txtUser;
 
 	private TimeChecker timeChecker;
 	private Beep beep;
@@ -83,7 +81,7 @@ public class Alarm extends javax.swing.JFrame {
 	public Alarm() {
 		initGUI();
 		
-		applicationProperties = new ApplicationProperties("alarme");
+		applicationProperties = new ApplicationProperties("alarme", System.getProperty("user.name"));
 		
 		carregarHorariosSalvos();
 		
@@ -172,23 +170,18 @@ public class Alarm extends javax.swing.JFrame {
 					col.setCellEditor(new FormattedEditor());
 					
 					jScrollPane1.setViewportView(tblHorarios);
-					tblHorarios.addMouseListener(new MouseAdapter() {
-						public void mouseClicked(MouseEvent evt) {
-							tblHorariosMouseClicked(evt);
-						}
-					});
 					tblHorarios.addPropertyChangeListener(new PropertyChangeListener() {
 						public void propertyChange(PropertyChangeEvent evt) {
 							tblHorariosPropertyChange(evt);
 						}
 					});					
 					
-					tblHorarios.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-					tblHorarios.setToolTipText("SHIFT+CLICK Para setar a hora corrente");
+					//tblHorarios.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+					
 				}
 			}
 			{
-				txtUser = new JTextField();
+				txtUser = new JLabel();
 				getContentPane().add(txtUser, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 				txtUser.setText("User");
 			}
@@ -349,15 +342,6 @@ public class Alarm extends javax.swing.JFrame {
 		lblMessage.setVisible(false);
 	}
 	
-	private void tblHorariosMouseClicked(MouseEvent evt) {
-		int col = tblHorarios.getSelectedColumn();		
-		if (evt.isShiftDown() && col == COL_HORA) {
-			int row = tblHorarios.getSelectedRow();		
-			tblHorarios.setValueAt(getHoraCorrente(), row, COL_HORA);
-			recalcularAlarmes(row);
-		}
-	}
-
 	private void pausa(int milis) {
 		try {
 			Thread.sleep(milis);
@@ -446,6 +430,15 @@ public class Alarm extends javax.swing.JFrame {
 		public FormattedEditor() throws ParseException {
 			MaskFormatter maskFormatter = new MaskFormatter("##:##");
 			component = new JFormattedTextField(maskFormatter);
+			component.setToolTipText("DUPLO CLICK Para setar a hora corrente");
+			component.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent evt) {
+					if (evt.getClickCount() > 1) {
+						component.setText(getHoraCorrente());
+					}					
+				}
+			});
+			
 		}
 		
 		@Override
@@ -468,7 +461,11 @@ public class Alarm extends javax.swing.JFrame {
 		@Override
 		public Component getTableCellEditorComponent(JTable table,
 				Object value, boolean isSelected, int row, int column) {
-			component.setText((String)value); 
+			component.setText((String)value);
+//			component.setText(getHoraCorrente());
+//			component.setSelectionStart(0);
+//			component.setSelectionEnd(component.getText().length());
+//			component.setCaretPosition(component.getText().length());			
 			return component;
 		} 
 		

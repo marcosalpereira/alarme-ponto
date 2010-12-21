@@ -9,14 +9,14 @@ public class ApplicationProperties {
     private final Properties properties = new Properties();
     private File fileProperties;
 
-    public ApplicationProperties(String applicationName) {
+    public ApplicationProperties(String applicationName, String propertyFileName) {
         String appHome = System.getProperty("user.home") + File.separator + "." + applicationName;
         File appHomeFile = new File(appHome);
         if (!appHomeFile.exists()) {
             appHomeFile.mkdirs();
         }
 
-        String fileName =  appHome + File.separator + "application.properties";
+        String fileName =  appHome + File.separator + propertyFileName + ".properties";
         fileProperties = new File(fileName);
 
         try {
