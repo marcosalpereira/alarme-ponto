@@ -1,4 +1,5 @@
 package alarm;
+import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -12,12 +13,16 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.BorderFactory;
 
+import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -28,7 +33,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import javax.swing.text.MaskFormatter;
 
 
 /**
@@ -156,11 +164,14 @@ public class Alarm extends javax.swing.JFrame {
 						@Override
 						public boolean isCellEditable(int row, int column) {
 							return (column == COL_HORA);
-						}
+						}						
 					};
+					tblHorarios.setModel(tblHorariosModel);
+					
+					TableColumn col = tblHorarios.getColumnModel().getColumn(COL_HORA);					
+					col.setCellEditor(new FormattedEditor());
 					
 					jScrollPane1.setViewportView(tblHorarios);
-					tblHorarios.setModel(tblHorariosModel);
 					tblHorarios.addMouseListener(new MouseAdapter() {
 						public void mouseClicked(MouseEvent evt) {
 							tblHorariosMouseClicked(evt);
@@ -218,7 +229,17 @@ public class Alarm extends javax.swing.JFrame {
 	}
 	
 	private void tblHorariosPropertyChange(PropertyChangeEvent evt) {
-		recalcularAlarmes(tblHorarios.getSelectedRow());
+		int selectedRow = tblHorarios.getSelectedRow();
+		if (selectedRow < 0) {
+			return;
+		}
+		if (getMinutos(selectedRow) == 0) {
+			JOptionPane.showMessageDialog(this, "Valor inválido!");
+			DefaultCellEditor oldValue = (DefaultCellEditor) evt.getOldValue();
+			tblHorarios.setValueAt(oldValue.getCellEditorValue(), selectedRow, COL_HORA);
+			return;
+		}
+		recalcularAlarmes(selectedRow);
 	}
 
 	private void recalcularAlarmes(int row) {
@@ -300,10 +321,25 @@ public class Alarm extends javax.swing.JFrame {
 	 * @return
 	 */
 	private int getMinutos(int row) {
-		String hora = (String) tblHorarios.getValueAt(row, COL_HORA);
+		String hora = (String) tblHorarios.getValueAt(row, COL_HORA);			
+		return parseMinutos(hora);
+	}
+
+	/**
+	 * Converte hora em minutos.
+	 * @param hora hora
+	 * @return a hora ou 0 em caso de erro
+	 */
+	private int parseMinutos(String hora) {
 		String[] split = hora.split(":");
 		int h = Integer.parseInt(split[0]);
 		int m = Integer.parseInt(split[1]);
+		if (!(h >= 0 && h <= 23)) {
+			throw new NumberFormatException("Hora inválida!");
+		}
+		if (!(m >= 0 && m <= 59)) {
+			throw new NumberFormatException("Minutos inválidos!");
+		}
 		return h * 60 + m;
 	}
 	
@@ -402,5 +438,41 @@ public class Alarm extends javax.swing.JFrame {
 		}
 	}
 	
+	public class FormattedEditor extends AbstractCellEditor implements TableCellEditor {
+		/** Serial. */
+		private static final long serialVersionUID = -679122425784443569L;
+		final JFormattedTextField component;
+		
+		public FormattedEditor() throws ParseException {
+			MaskFormatter maskFormatter = new MaskFormatter("##:##");
+			component = new JFormattedTextField(maskFormatter);
+		}
+		
+		@Override
+		public boolean stopCellEditing() {
+			try {
+				parseMinutos(component.getText());
+				super.stopCellEditing();
+				return true;
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(null, e.getMessage());
+				return false;
+			}
+		}
+		
+		@Override
+		public Object getCellEditorValue() {
+			return component.getText(); 
+		}
 
+		@Override
+		public Component getTableCellEditorComponent(JTable table,
+				Object value, boolean isSelected, int row, int column) {
+			component.setText((String)value); 
+			return component;
+		} 
+		
+	}
 }
+
+
