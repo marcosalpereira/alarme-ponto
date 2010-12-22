@@ -438,17 +438,19 @@ public class Alarm extends javax.swing.JFrame {
 		
 		@Override
 		public boolean stopCellEditing() {
-			try {
-				int minutos = parseMinutos(component.getText());
-				if (minutos < getHoraCorrenteEmMinutos()) {
-					JOptionPane.showMessageDialog(null,
-							"Informe uma hora maior que a hora atual");
+			if (component.isEnabled()) {
+				try {
+					int minutos = parseMinutos(component.getText());
+					if (minutos < getHoraCorrenteEmMinutos()) {
+						JOptionPane.showMessageDialog(null,
+						"Informe uma hora maior que a hora atual");
+						return false;
+					}
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(null, e.getMessage());
 					return false;
 				}
-			} catch (NumberFormatException e) {
-				JOptionPane.showMessageDialog(null, e.getMessage());
-				return false;
-			}			
+			}
 			super.stopCellEditing();
 			if (component.isEnabled()) {
 				recalcularAlarmes(tblHorarios.getSelectedRow());
