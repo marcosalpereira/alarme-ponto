@@ -1,4 +1,5 @@
 package alarm;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -10,8 +11,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
@@ -20,7 +19,6 @@ import java.util.Map;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -132,6 +130,17 @@ public class Alarm extends javax.swing.JFrame {
 		int m = calendar.get(Calendar.MINUTE);
 		String hora = String.format("%02d:%02d", h, m);
 		return hora;
+	}
+	
+	/**
+	 * Retorna a hora corrente em minutos decorridos.
+	 * @return os minutos
+	 */
+	private int getHoraCorrenteEmMinutos() {
+		Calendar calendar = Calendar.getInstance();
+		int h = calendar.get(Calendar.HOUR_OF_DAY);
+		int m = calendar.get(Calendar.MINUTE);
+		return h * 60 + m;
 	}	
 	
 	private void initGUI() {
@@ -156,13 +165,14 @@ public class Alarm extends javax.swing.JFrame {
 											{ "1º Período - Extra - Entrada", "00:00" }, { "1º Período - Extra - Saída", "00:00" }, 
 										},
 								new String[] { "Período", "Hora" });
+					
 					tblHorarios = new JTable() {
 						private static final long serialVersionUID = 1L;
 
 						@Override
 						public boolean isCellEditable(int row, int column) {
-							return (column == COL_HORA);
-						}						
+							return column == COL_HORA;							
+						}
 					};
 					tblHorarios.setModel(tblHorariosModel);
 					
@@ -170,14 +180,6 @@ public class Alarm extends javax.swing.JFrame {
 					col.setCellEditor(new FormattedEditor());
 					
 					jScrollPane1.setViewportView(tblHorarios);
-					tblHorarios.addPropertyChangeListener(new PropertyChangeListener() {
-						public void propertyChange(PropertyChangeEvent evt) {
-							tblHorariosPropertyChange(evt);
-						}
-					});					
-					
-					//tblHorarios.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-					
 				}
 			}
 			{
@@ -220,20 +222,6 @@ public class Alarm extends javax.swing.JFrame {
 			e.printStackTrace();
 		}
 	}
-	
-	private void tblHorariosPropertyChange(PropertyChangeEvent evt) {
-		int selectedRow = tblHorarios.getSelectedRow();
-		if (selectedRow < 0) {
-			return;
-		}
-		if (getMinutos(selectedRow) == 0) {
-			JOptionPane.showMessageDialog(this, "Valor inválido!");
-			DefaultCellEditor oldValue = (DefaultCellEditor) evt.getOldValue();
-			tblHorarios.setValueAt(oldValue.getCellEditorValue(), selectedRow, COL_HORA);
-			return;
-		}
-		recalcularAlarmes(selectedRow);
-	}
 
 	private void recalcularAlarmes(int row) {
 		switch (row) {
@@ -256,38 +244,38 @@ public class Alarm extends javax.swing.JFrame {
 	}
 
 	private void recalcularSaidaTurnoExtra() {
-		int min = getMinutos(4);
+		int min = getHoraEmMinutos(4);
 		min += 2 * 60;
 		setMinutos(5, min);
 	}
 	
 	private void recalcularEntradaTurnoExtra() {
-		int min = getMinutos(3);
+		int min = getHoraEmMinutos(3);
 		min += 15;
 		setMinutos(4, min);
 		recalcularAlarmes(4);	
 	}
 
 	private void recalcularSaidaPrimeiroTurno() {
-		int min = getMinutos(0);
+		int min = getHoraEmMinutos(0);
 		min += 4 * 60;
 		setMinutos(1, min);
 		recalcularAlarmes(1);
 	}
 	
 	private void recalcularEntradaSegundoTurno() {
-		int min = getMinutos(1);
+		int min = getHoraEmMinutos(1);
 		min += 60;
 		setMinutos(2, min);
 		recalcularAlarmes(2);
 	}
 	
 	private void recalcularSaidaSegundoTurno() {
-		int p0 = getMinutos(0);
-		int p1 = getMinutos(1);
+		int p0 = getHoraEmMinutos(0);
+		int p1 = getHoraEmMinutos(1);
 		int primeiroTurno = p1 - p0;
 		
-		int p2 = getMinutos(2);
+		int p2 = getHoraEmMinutos(2);
 		
 		int minutosFaltam = 8 * 60 - primeiroTurno;
 		int p3 = p2 + minutosFaltam;
@@ -313,7 +301,7 @@ public class Alarm extends javax.swing.JFrame {
 	 * @param row
 	 * @return
 	 */
-	private int getMinutos(int row) {
+	private int getHoraEmMinutos(int row) {
 		String hora = (String) tblHorarios.getValueAt(row, COL_HORA);			
 		return parseMinutos(hora);
 	}
@@ -325,15 +313,21 @@ public class Alarm extends javax.swing.JFrame {
 	 */
 	private int parseMinutos(String hora) {
 		String[] split = hora.split(":");
-		int h = Integer.parseInt(split[0]);
-		int m = Integer.parseInt(split[1]);
-		if (!(h >= 0 && h <= 23)) {
-			throw new NumberFormatException("Hora inválida!");
+		try {
+			int h = Integer.parseInt(split[0]);
+			int m = Integer.parseInt(split[1]);
+			
+			if (!(h >= 0 && h <= 23)) {
+				throw new NumberFormatException("Hora inválida!");
+			}
+			if (!(m >= 0 && m <= 59)) {
+				throw new NumberFormatException("Minutos inválidos!");
+			}
+			return h * 60 + m;
+		} catch (NumberFormatException e) {
+			throw new NumberFormatException("Valor inválido!");
 		}
-		if (!(m >= 0 && m <= 59)) {
-			throw new NumberFormatException("Minutos inválidos!");
-		}
-		return h * 60 + m;
+		
 	}
 	
 	private void btnOkActionPerformed(ActionEvent evt) {
@@ -430,27 +424,36 @@ public class Alarm extends javax.swing.JFrame {
 		public FormattedEditor() throws ParseException {
 			MaskFormatter maskFormatter = new MaskFormatter("##:##");
 			component = new JFormattedTextField(maskFormatter);
-			component.setToolTipText("DUPLO CLICK Para setar a hora corrente");
+			component.setDisabledTextColor(Color.GRAY);
+			
 			component.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent evt) {
-					if (evt.getClickCount() > 1) {
+					if (evt.getClickCount() > 1 && component.isEnabled()) {
 						component.setText(getHoraCorrente());
 					}					
 				}
 			});
 			
-		}
+		}	
 		
 		@Override
 		public boolean stopCellEditing() {
 			try {
-				parseMinutos(component.getText());
-				super.stopCellEditing();
-				return true;
+				int minutos = parseMinutos(component.getText());
+				if (minutos < getHoraCorrenteEmMinutos()) {
+					JOptionPane.showMessageDialog(null,
+							"Informe uma hora maior que a hora atual");
+					return false;
+				}
 			} catch (NumberFormatException e) {
 				JOptionPane.showMessageDialog(null, e.getMessage());
 				return false;
+			}			
+			super.stopCellEditing();
+			if (component.isEnabled()) {
+				recalcularAlarmes(tblHorarios.getSelectedRow());
 			}
+			return true;
 		}
 		
 		@Override
@@ -462,10 +465,13 @@ public class Alarm extends javax.swing.JFrame {
 		public Component getTableCellEditorComponent(JTable table,
 				Object value, boolean isSelected, int row, int column) {
 			component.setText((String)value);
-//			component.setText(getHoraCorrente());
-//			component.setSelectionStart(0);
-//			component.setSelectionEnd(component.getText().length());
-//			component.setCaretPosition(component.getText().length());			
+			if (getHoraEmMinutos(row) >= getHoraCorrenteEmMinutos()) {
+				component.setEnabled(true);
+				component.setToolTipText("DUPLO CLICK Para setar a hora corrente");
+			} else {
+				component.setToolTipText("Não pode editar horários antes da hora corrente");
+				component.setEnabled(false);
+			}
 			return component;
 		} 
 		
