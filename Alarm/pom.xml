@@ -1,0 +1,29 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.marcosoft.alarm</groupId>
+	<artifactId>alarm</artifactId>
+	<name>alarm</name>
+	<version>0.1</version>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<finalName>${pom.name}</finalName>
+
+					<archive>
+						<manifest>
+							<mainClass>org.marcosoft.alarm.Alarm</mainClass>
+						</manifest>
+						<manifestEntries>
+							<version>${pom.version}</version>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
