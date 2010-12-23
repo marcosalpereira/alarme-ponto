@@ -132,17 +132,6 @@ public class Alarm extends javax.swing.JFrame {
 		return hora;
 	}
 	
-	/**
-	 * Retorna a hora corrente em minutos decorridos.
-	 * @return os minutos
-	 */
-	private int getHoraCorrenteEmMinutos() {
-		Calendar calendar = Calendar.getInstance();
-		int h = calendar.get(Calendar.HOUR_OF_DAY);
-		int m = calendar.get(Calendar.MINUTE);
-		return h * 60 + m;
-	}	
-	
 	private void initGUI() {
 		try {
 			GridBagLayout thisLayout = new GridBagLayout();
@@ -420,11 +409,13 @@ public class Alarm extends javax.swing.JFrame {
 		/** Serial. */
 		private static final long serialVersionUID = -679122425784443569L;
 		final JFormattedTextField component;
+		private int valorAnterior; 
 		
 		public FormattedEditor() throws ParseException {
 			MaskFormatter maskFormatter = new MaskFormatter("##:##");
 			component = new JFormattedTextField(maskFormatter);
 			component.setDisabledTextColor(Color.GRAY);
+			component.setToolTipText("DUPLO CLICK Para setar a hora corrente");
 			
 			component.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent evt) {
@@ -438,24 +429,19 @@ public class Alarm extends javax.swing.JFrame {
 		
 		@Override
 		public boolean stopCellEditing() {
-			if (component.isEnabled()) {
-				try {
-					int minutos = parseMinutos(component.getText());
-					if (minutos < getHoraCorrenteEmMinutos()) {
-						JOptionPane.showMessageDialog(null,
-						"Informe uma hora maior que a hora atual");
-						return false;
-					}
-				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(null, e.getMessage());
-					return false;
-				}
+			int minutos;
+			try {
+				minutos = parseMinutos(component.getText());
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(null, e.getMessage());
+				return false;
 			}
 			super.stopCellEditing();
-			if (component.isEnabled()) {
+			if (minutos != valorAnterior) {
 				recalcularAlarmes(tblHorarios.getSelectedRow());
 			}
 			return true;
+				
 		}
 		
 		@Override
@@ -466,14 +452,9 @@ public class Alarm extends javax.swing.JFrame {
 		@Override
 		public Component getTableCellEditorComponent(JTable table,
 				Object value, boolean isSelected, int row, int column) {
-			component.setText((String)value);
-			if (getHoraEmMinutos(row) >= getHoraCorrenteEmMinutos()) {
-				component.setEnabled(true);
-				component.setToolTipText("DUPLO CLICK Para setar a hora corrente");
-			} else {
-				component.setToolTipText("Não pode editar horários antes da hora corrente");
-				component.setEnabled(false);
-			}
+			String hora = (String)value;
+			component.setText(hora);
+			valorAnterior = parseMinutos(hora);
 			return component;
 		} 
 		
