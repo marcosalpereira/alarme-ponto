@@ -1,6 +1,7 @@
 package org.marcosoft.alarm;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -9,8 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
@@ -23,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -35,6 +35,8 @@ import javax.swing.table.TableModel;
 import javax.swing.text.MaskFormatter;
 
 import org.marcosoft.util.ApplicationProperties;
+import org.marcosoft.util.PropertiesEditor;
+import org.marcosoft.util.SwingUtil;
 import org.marcosoft.util.SystemUtil;
 
 
@@ -53,11 +55,22 @@ import org.marcosoft.util.SystemUtil;
 public class Alarm extends javax.swing.JFrame {
 	private static final long serialVersionUID = -1045806326715430034L;
 
+	public static final String PROPERTY_BEEPER_PAUSE = "beeper.pause";
+	public static final String PROPERTY_BEEPER_TIMES = "beeper.times";
+	public static final String PROPERTY_BEEPER_COMMAND = "beeper.command";
+	
+	public static final String DEFAULT_BEEPER_TIMES = "20";
+	public static final String DEFAULT_BEEPER_PAUSE = "3000";
+	private static final String DEFAULT_BEEPER_COMMAND = 
+		"/usr/bin/beep -f 4000 -l 70 -n -f 3000 -l 70 -n -f 4000 -l 70 -n -f 3000 -l 70 -n -f 4000 -l 70 -n -f 3000 -l 70";
+	
 	private static final int COL_HORA = 1;
 	
 	private JScrollPane jScrollPane1;
 	private JTable tblHorarios;
 	private JLabel lblMessage;
+	private JButton btnOpcoes;
+	private JPanel jPanel1;
 	private JButton btnOk;
 	private JLabel txtUser;
 
@@ -75,6 +88,7 @@ public class Alarm extends javax.swing.JFrame {
 				Alarm inst = new Alarm();
 				inst.setLocationRelativeTo(null);
 				inst.setVisible(true);
+				inst.lblMessage.setVisible(false);
 			}
 		});	
 	}
@@ -83,7 +97,9 @@ public class Alarm extends javax.swing.JFrame {
 		initGUI();
 		
 		applicationProperties = new ApplicationProperties("alarme", System.getProperty("user.name"));
-		
+		applicationProperties.setDefault(PROPERTY_BEEPER_COMMAND, DEFAULT_BEEPER_COMMAND);
+		applicationProperties.setDefault(PROPERTY_BEEPER_PAUSE, DEFAULT_BEEPER_PAUSE);
+		applicationProperties.setDefault(PROPERTY_BEEPER_TIMES, DEFAULT_BEEPER_TIMES);
 		carregarHorariosSalvos();
 		
 		timeChecker = new TimeChecker();
@@ -180,35 +196,46 @@ public class Alarm extends javax.swing.JFrame {
 				txtUser.setText("User");
 			}
 			{
-				btnOk = new JButton();
-				getContentPane().add(btnOk, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 2), 80, 0));
-				btnOk.setText("ok");
-				btnOk.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent evt) {
-						btnOkActionPerformed(evt);
-					}
-				});
-			}
-			{
 				lblMessage = new JLabel();
 				getContentPane().add(lblMessage, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
+				jPanel1 = new JPanel();
+				FlowLayout jPanel1Layout = new FlowLayout();
+				jPanel1Layout.setAlignment(FlowLayout.RIGHT);
+				jPanel1.setLayout(jPanel1Layout);
+				{
+					btnOk = new JButton();
+					btnOpcoes = new JButton();
+					btnOpcoes.setText("Opções");
+					btnOpcoes.setPreferredSize(new java.awt.Dimension(100, 22));
+					btnOpcoes.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent evt) {
+							btnOpcoesActionPerformed(evt);
+						}
+					});					
+					jPanel1.add(btnOpcoes);
+					jPanel1.add(btnOk);
+					btnOk.setText("Minimizar");
+					btnOk.setPreferredSize(new java.awt.Dimension(110, 22));
+					btnOk.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent evt) {
+							btnOkActionPerformed(evt);
+						}
+					});
+				}
+				getContentPane().add(jPanel1, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 				lblMessage.setText("jLabel1");
 				lblMessage.setFont(new java.awt.Font("Verdana",1,14));
 				lblMessage.setOpaque(true);
 				lblMessage.setBackground(new java.awt.Color(255,0,0));
 				lblMessage.setForeground(new java.awt.Color(255,255,255));
 				lblMessage.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-				lblMessage.setVisible(false);
 			}
 			txtUser.setText(System.getProperty("user.name"));
-			setAlwaysOnTop(true);			
-			this.addWindowListener(new WindowAdapter() {
-				public void windowClosed(WindowEvent evt) {
-					thisWindowClosed(evt);
-				}
-			});
+			setAlwaysOnTop(true);
+			
 			pack();
 			setSize(400, 300);
+			SwingUtil.center(this);
 		} catch (Exception e) {
 		    //add your error handling code here
 			e.printStackTrace();
@@ -233,6 +260,7 @@ public class Alarm extends javax.swing.JFrame {
 				recalcularSaidaTurnoExtra();
 				break;
 		}
+		salvarHorarios();
 	}
 
 	private void recalcularSaidaTurnoExtra() {
@@ -245,21 +273,21 @@ public class Alarm extends javax.swing.JFrame {
 		int min = getHoraEmMinutos(3);
 		min += 15;
 		setMinutos(4, min);
-		recalcularAlarmes(4);	
+		recalcularSaidaTurnoExtra();	
 	}
 
 	private void recalcularSaidaPrimeiroTurno() {
 		int min = getHoraEmMinutos(0);
 		min += 4 * 60;
 		setMinutos(1, min);
-		recalcularAlarmes(1);
+		recalcularEntradaSegundoTurno();
 	}
 	
 	private void recalcularEntradaSegundoTurno() {
 		int min = getHoraEmMinutos(1);
 		min += 60;
 		setMinutos(2, min);
-		recalcularAlarmes(2);
+		recalcularSaidaSegundoTurno();
 	}
 	
 	private void recalcularSaidaSegundoTurno() {
@@ -273,7 +301,7 @@ public class Alarm extends javax.swing.JFrame {
 		int p3 = p2 + minutosFaltam;
 		
 		setMinutos(3, p3);
-		recalcularAlarmes(3);
+		recalcularEntradaTurnoExtra();
 	}
 
 	/**
@@ -336,10 +364,11 @@ public class Alarm extends javax.swing.JFrame {
 		}
 	}
 	
-	private void thisWindowClosed(WindowEvent evt) {
-		salvarHorarios();		
+	private void btnOpcoesActionPerformed(ActionEvent evt) {
+		new PropertiesEditor(applicationProperties, new Validator(), PROPERTY_BEEPER_COMMAND,
+				PROPERTY_BEEPER_PAUSE, PROPERTY_BEEPER_TIMES);
 	}
-	
+
 	/**
 	 * Continuamente checa se é hora de alarmar.
 	 */
@@ -373,10 +402,12 @@ public class Alarm extends javax.swing.JFrame {
 		public void run() {
 			for(;;) {
 				if (toBeep) {
-					int beeperTimes = applicationProperties.getProperty("beeper.times", 100);
+					int beeperTimes = 
+						applicationProperties.getIntProperty(PROPERTY_BEEPER_TIMES);
 					String beeperCommand = 
-						applicationProperties.getProperty("beeper.command", "/usr/bin/beep -f 4000");
-					int beeperPause = applicationProperties.getProperty("beeper.pause", 500);
+						applicationProperties.getProperty(PROPERTY_BEEPER_COMMAND);
+					int beeperPause = 
+						applicationProperties.getIntProperty(PROPERTY_BEEPER_PAUSE);
 					
 					countBeep++;
 					try {
