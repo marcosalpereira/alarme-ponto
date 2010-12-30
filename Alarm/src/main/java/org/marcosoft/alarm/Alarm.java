@@ -1,58 +1,12 @@
 package org.marcosoft.alarm;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-import javax.swing.border.BevelBorder;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import javax.swing.text.MaskFormatter;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.marcosoft.util.ApplicationProperties;
 import org.marcosoft.util.PropertiesEditor;
-import org.marcosoft.util.SwingUtil;
-import org.marcosoft.util.SystemUtil;
 
 
-/**
-* This code was edited or generated using CloudGarden's Jigloo
-* SWT/Swing GUI Builder, which is free for non-commercial
-* use. If Jigloo is being used commercially (ie, by a corporation,
-* company or business for any purpose whatever) then you
-* should purchase a license for each developer using Jigloo.
-* Please visit www.cloudgarden.com for details.
-* Use of Jigloo implies acceptance of these licensing terms.
-* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
-* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
-* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
-*/
-public class Alarm extends javax.swing.JFrame {
+public class Alarm implements Observer {
 	private static final long serialVersionUID = -1045806326715430034L;
 
 	public static final String PROPERTY_BEEPER_PAUSE = "beeper.pause";
@@ -64,435 +18,105 @@ public class Alarm extends javax.swing.JFrame {
 	private static final String DEFAULT_BEEPER_COMMAND = 
 		"/usr/bin/beep -f 4000 -l 70 -n -f 3000 -l 70 -n -f 4000 -l 70 -n -f 3000 -l 70 -n -f 4000 -l 70 -n -f 3000 -l 70";
 	
-	private static final int COL_HORA = 1;
-	
-	private JScrollPane jScrollPane1;
-	private JTable tblHorarios;
-	private JLabel lblMessage;
-	private JButton btnOpcoes;
-	private JPanel jPanel1;
-	private JButton btnOk;
-	private JLabel txtUser;
-
 	private TimeChecker timeChecker;
-	private Beep beep;
+	private Beeper beeper;
 
 	private ApplicationProperties applicationProperties;
+
+	private BeepConfig beepConfig;
+
+	private Horarios horarios;
+
+	private AlarmEditor alarmEditor;
 
 	/**
 	* Auto-generated main method to display this JFrame
 	*/
 	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				Alarm inst = new Alarm();
-				inst.setLocationRelativeTo(null);
-				inst.setVisible(true);
-				inst.lblMessage.setVisible(false);
-			}
-		});	
+		new Alarm();
 	}
 	
 	public Alarm() {
-		initGUI();
 		
 		applicationProperties = new ApplicationProperties("alarme", System.getProperty("user.name"));
 		applicationProperties.setDefault(PROPERTY_BEEPER_COMMAND, DEFAULT_BEEPER_COMMAND);
 		applicationProperties.setDefault(PROPERTY_BEEPER_PAUSE, DEFAULT_BEEPER_PAUSE);
 		applicationProperties.setDefault(PROPERTY_BEEPER_TIMES, DEFAULT_BEEPER_TIMES);
-		carregarHorariosSalvos();
 		
-		timeChecker = new TimeChecker();
-		timeChecker.setDaemon(true);
-		timeChecker.start();
+		beepConfig = carregarConfiguracoesBeep();
+		horarios = carregarHorarios();
 		
-		beep = new Beep();
-		beep.setDaemon(true);
-		beep.start();
+		horarios.addObserver(this);
+		
+		alarmEditor = new AlarmEditor(horarios);
+		alarmEditor.addObserver(this);
+		
+		beeper = new Beeper(beepConfig);		
+
+		timeChecker = new TimeChecker(horarios);
+		timeChecker.addObserver(this);
+		
+		Thread thread = new Thread(timeChecker);		
+		thread.setDaemon(true);
+		thread.start();
+		
 	}
 	
-	private void carregarHorariosSalvos() {
-		for (int row = 0; row < tblHorarios.getRowCount(); row++) {
-			String property = applicationProperties.getProperty("p." + row, "00:00");
-			tblHorarios.setValueAt(property, row, COL_HORA);
-		}		
+	@Override
+	public void update(Observable o, Object arg) {
+		if (o instanceof TimeChecker) {
+			String hora = (String) arg;
+			alarmEditor.mostrarMensagemAlarme(hora);
+
+			beeper.beep();
+			
+		} else if (o instanceof AlarmEditor) {
+			String cmd = (String) arg;
+			if ("OK".equals(cmd)) {
+				beeper.mute();
+				
+			} else if ("OPCOES".equals(cmd)) {
+				new PropertiesEditor(applicationProperties, new Validator(), PROPERTY_BEEPER_COMMAND,
+						PROPERTY_BEEPER_PAUSE, PROPERTY_BEEPER_TIMES);
+			}
+			
+		} else if (o instanceof Horarios) {
+			salvarHorarios();
+		}
+	}
+
+	private BeepConfig carregarConfiguracoesBeep() {
+		String command = applicationProperties.getProperty(PROPERTY_BEEPER_COMMAND);
+		int pause = applicationProperties.getIntProperty(PROPERTY_BEEPER_PAUSE);
+		int times = applicationProperties.getIntProperty(PROPERTY_BEEPER_TIMES);
+		return new BeepConfig(command, times, pause);
+	}
+
+	private Horarios carregarHorarios() {
+		Horarios horarios = new Horarios();
+		horarios.setPrimeiroTurnoEntrada(applicationProperties.getProperty("primeiroTurnoEntrada", "00:00"));
+		horarios.setPrimeiroTurnoSaida(applicationProperties.getProperty("primeiroTurnoSaida", "00:00"));
+		
+		horarios.setSegundoTurnoEntrada(applicationProperties.getProperty("segundoTurnoEntrada", "00:00"));
+		horarios.setSegundoTurnoSaida(applicationProperties.getProperty("segundoTurnoSaida", "00:00"));
+		
+		horarios.setTurnoExtraEntrada(applicationProperties.getProperty("turnoExtraEntrada", "00:00"));
+		horarios.setTurnoExtraSaida(applicationProperties.getProperty("turnoExtraSaida", "00:00"));
+		
+		return horarios;
 	}
 	
 	private void salvarHorarios() {
-		for (int row = 0; row < tblHorarios.getRowCount(); row++) {
-			applicationProperties.setProperty("p." + row, tblHorarios.getValueAt(row, COL_HORA) + "");
-		}
+		applicationProperties.setProperty("primeiroTurnoEntrada", horarios.getPrimeiroTurnoEntrada());
+		applicationProperties.setProperty("primeiroTurnoSaida", horarios.getPrimeiroTurnoSaida());
+		
+		applicationProperties.setProperty("segundoTurnoEntrada", horarios.getSegundoTurnoEntrada());
+		applicationProperties.setProperty("segundoTurnoSaida", horarios.getSegundoTurnoSaida());
+		
+		applicationProperties.setProperty("turnoExtraEntrada", horarios.getTurnoExtraEntrada());
+		applicationProperties.setProperty("turnoExtraSaida", horarios.getTurnoExtraSaida());
 	}
 	
-
-	/**
-	 * Verifica se é hora de alarmar.
-	 * @return a hora de alarme ou <code>null</code>
-	 */
-	private String horaAlarme() {
-		String hora = getHoraCorrente();
-		for (int row = 0; row < tblHorarios.getRowCount(); row++) {
-			if (hora.equals(tblHorarios.getValueAt(row, COL_HORA))) {
-				return hora;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Retorna a hora corrente no formato hh:mm.
-	 * @return a hora
-	 */
-	private String getHoraCorrente() {
-		Calendar calendar = Calendar.getInstance();
-		int h = calendar.get(Calendar.HOUR_OF_DAY);
-		int m = calendar.get(Calendar.MINUTE);
-		String hora = String.format("%02d:%02d", h, m); 
-		return hora;
-	}
-	
-	private void initGUI() {
-		try {
-			GridBagLayout thisLayout = new GridBagLayout();
-			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			thisLayout.rowWeights = new double[] {0.0, 1.0, 0.0, 0.0};
-			thisLayout.rowHeights = new int[] {7, 7, 7, 7};
-			thisLayout.columnWeights = new double[] {0.1};
-			thisLayout.columnWidths = new int[] {7};
-			getContentPane().setLayout(thisLayout);
-			this.setTitle("Alarme Ponto " + SystemUtil.getAppVersion());
-			{
-				jScrollPane1 = new JScrollPane();
-				getContentPane().add(jScrollPane1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-				{
-					TableModel tblHorariosModel = 
-						new DefaultTableModel(
-								new Object[][] { 
-											{ "1º Período - Entrada", "00:00" }, { "1º Período - Saída", "00:00" }, 
-											{ "2º Período - Entrada", "00:00" }, { "2º Período - Saída", "00:00" }, 
-											{ "1º Período - Extra - Entrada", "00:00" }, { "1º Período - Extra - Saída", "00:00" }, 
-										},
-								new String[] { "Período", "Hora" });
-					
-					tblHorarios = new JTable() {
-						private static final long serialVersionUID = 1L;
-
-						@Override
-						public boolean isCellEditable(int row, int column) {
-							return column == COL_HORA;							
-						}
-					};
-					tblHorarios.setModel(tblHorariosModel);
-					
-					TableColumn col = tblHorarios.getColumnModel().getColumn(COL_HORA);					
-					col.setCellEditor(new FormattedEditor());
-					
-					jScrollPane1.setViewportView(tblHorarios);
-				}
-			}
-			{
-				txtUser = new JLabel();
-				getContentPane().add(txtUser, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-				txtUser.setText("User");
-			}
-			{
-				lblMessage = new JLabel();
-				getContentPane().add(lblMessage, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
-				jPanel1 = new JPanel();
-				FlowLayout jPanel1Layout = new FlowLayout();
-				jPanel1Layout.setAlignment(FlowLayout.RIGHT);
-				jPanel1.setLayout(jPanel1Layout);
-				{
-					btnOk = new JButton();
-					btnOpcoes = new JButton();
-					btnOpcoes.setText("Opções");
-					btnOpcoes.setPreferredSize(new java.awt.Dimension(100, 22));
-					btnOpcoes.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent evt) {
-							btnOpcoesActionPerformed(evt);
-						}
-					});					
-					jPanel1.add(btnOpcoes);
-					jPanel1.add(btnOk);
-					btnOk.setText("Minimizar");
-					btnOk.setPreferredSize(new java.awt.Dimension(110, 22));
-					btnOk.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent evt) {
-							btnOkActionPerformed(evt);
-						}
-					});
-				}
-				getContentPane().add(jPanel1, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-				lblMessage.setText("jLabel1");
-				lblMessage.setFont(new java.awt.Font("Verdana",1,14));
-				lblMessage.setOpaque(true);
-				lblMessage.setBackground(new java.awt.Color(255,0,0));
-				lblMessage.setForeground(new java.awt.Color(255,255,255));
-				lblMessage.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-			}
-			txtUser.setText(System.getProperty("user.name"));
-			setAlwaysOnTop(true);
-			
-			pack();
-			setSize(400, 300);
-			SwingUtil.center(this);
-		} catch (Exception e) {
-		    //add your error handling code here
-			e.printStackTrace();
-		}
-	}
-
-	private void recalcularAlarmes(int row) {
-		switch (row) {
-			case 0:
-				recalcularSaidaPrimeiroTurno();
-				break;
-			case 1:
-				recalcularEntradaSegundoTurno();
-				break;
-			case 2:
-				recalcularSaidaSegundoTurno();
-				break;
-			case 3:
-				recalcularEntradaTurnoExtra();
-				break;
-			case 4:
-				recalcularSaidaTurnoExtra();
-				break;
-		}
-		salvarHorarios();
-	}
-
-	private void recalcularSaidaTurnoExtra() {
-		int min = getHoraEmMinutos(4);
-		min += 2 * 60;
-		setMinutos(5, min);
-	}
-	
-	private void recalcularEntradaTurnoExtra() {
-		int min = getHoraEmMinutos(3);
-		min += 15;
-		setMinutos(4, min);
-		recalcularSaidaTurnoExtra();	
-	}
-
-	private void recalcularSaidaPrimeiroTurno() {
-		int min = getHoraEmMinutos(0);
-		min += 4 * 60;
-		setMinutos(1, min);
-		recalcularEntradaSegundoTurno();
-	}
-	
-	private void recalcularEntradaSegundoTurno() {
-		int min = getHoraEmMinutos(1);
-		min += 60;
-		setMinutos(2, min);
-		recalcularSaidaSegundoTurno();
-	}
-	
-	private void recalcularSaidaSegundoTurno() {
-		int p0 = getHoraEmMinutos(0);
-		int p1 = getHoraEmMinutos(1);
-		int primeiroTurno = p1 - p0;
-		
-		int p2 = getHoraEmMinutos(2);
-		
-		int minutosFaltam = 8 * 60 - primeiroTurno;
-		int p3 = p2 + minutosFaltam;
-		
-		setMinutos(3, p3);
-		recalcularEntradaTurnoExtra();
-	}
-
-	/**
-	 * Setar os minutos na tabela. 
-	 * @param row
-	 * @param mins
-	 */
-	private void setMinutos(int row, int mins) {
-		int h = mins / 60;
-		int m = mins - (h * 60);
-		String hora = String.format("%02d:%02d", h, m);
-		tblHorarios.setValueAt(hora, row, COL_HORA);
-	}
-
-	/**
-	 * Pegar os minutos na linha informada. 
-	 * @param row
-	 * @return
-	 */
-	private int getHoraEmMinutos(int row) {
-		String hora = (String) tblHorarios.getValueAt(row, COL_HORA);			
-		return parseMinutos(hora);
-	}
-
-	/**
-	 * Converte hora em minutos.
-	 * @param hora hora
-	 * @return a hora ou 0 em caso de erro
-	 */
-	private int parseMinutos(String hora) {
-		String[] split = hora.split(":");
-		try {
-			int h = Integer.parseInt(split[0]);
-			int m = Integer.parseInt(split[1]);
-			
-			if (!(h >= 0 && h <= 23)) {
-				throw new NumberFormatException("Hora inválida!");
-			}
-			if (!(m >= 0 && m <= 59)) {
-				throw new NumberFormatException("Minutos inválidos!");
-			}
-			return h * 60 + m;
-		} catch (NumberFormatException e) {
-			throw new NumberFormatException("Valor inválido!");
-		}
-		
-	}
-	
-	private void btnOkActionPerformed(ActionEvent evt) {
-		setExtendedState(Frame.ICONIFIED);
-		beep.toBeep = false;
-		lblMessage.setVisible(false);
-	}
-	
-	private void pausa(int milis) {
-		try {
-			Thread.sleep(milis);
-		} catch (InterruptedException e) {
-			
-		}
-	}
-	
-	private void btnOpcoesActionPerformed(ActionEvent evt) {
-		new PropertiesEditor(applicationProperties, new Validator(), PROPERTY_BEEPER_COMMAND,
-				PROPERTY_BEEPER_PAUSE, PROPERTY_BEEPER_TIMES);
-	}
-
-	/**
-	 * Continuamente checa se é hora de alarmar.
-	 */
-	public class TimeChecker extends Thread {
-		private Map<String, Boolean> alarmados = new HashMap<String, Boolean>();
-		
-		@Override
-		public void run() {
-			for (;;) {
-				String hora = horaAlarme();
-				if (hora != null && alarmados.get(hora) == null) {
-					alarmados.put(hora, true);
-					lblMessage.setVisible(true);
-					lblMessage.setText(" Ponto: " + hora);
-					setExtendedState(Frame.NORMAL);
-					beep.toBeep = true;
-				}
-				pausa(1000);
-			}			
-		}		
-	}
-	
-	/**
-	 * Notificacao sonora do alarme via beep. 
-	 */
-	public class Beep extends Thread {
-		private boolean toBeep;
-		private int countBeep;
-		
-		@Override
-		public void run() {
-			for(;;) {
-				if (toBeep) {
-					int beeperTimes = 
-						applicationProperties.getIntProperty(PROPERTY_BEEPER_TIMES);
-					String beeperCommand = 
-						applicationProperties.getProperty(PROPERTY_BEEPER_COMMAND);
-					int beeperPause = 
-						applicationProperties.getIntProperty(PROPERTY_BEEPER_PAUSE);
-					
-					countBeep++;
-					try {
-						execute(beeperCommand);
-					} catch (Exception e) {
-						toBeep = false;
-						JOptionPane.showMessageDialog(null, "Can't beep! " + e.getMessage());
-					}
-					if (countBeep > beeperTimes) {
-						toBeep = false;
-					}
-					pausa(beeperPause);				
-				} else {
-					countBeep = 0;
-					pausa(500);				
-				}
-			}
-		}
-
-		/**
-		 * Executa o comando e espera pelo termino do processo.
-		 * @param command comando
-		 * @throws IOException
-		 * @throws InterruptedException
-		 */
-		private void execute(String command) throws IOException, InterruptedException {
-			Process process = Runtime.getRuntime().exec(command);
-			process.waitFor();
-		}
-	}
-	
-	public class FormattedEditor extends AbstractCellEditor implements TableCellEditor {
-		/** Serial. */
-		private static final long serialVersionUID = -679122425784443569L;
-		final JFormattedTextField component;
-		private int valorAnterior; 
-		
-		public FormattedEditor() throws ParseException {
-			MaskFormatter maskFormatter = new MaskFormatter("##:##");
-			component = new JFormattedTextField(maskFormatter);
-			component.setDisabledTextColor(Color.GRAY);
-			component.setToolTipText("DUPLO CLICK Para setar a hora corrente");
-			
-			component.addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent evt) {
-					if (evt.getClickCount() > 1 && component.isEnabled()) {
-						component.setText(getHoraCorrente());
-					}					
-				}
-			});
-			
-		}	
-		
-		@Override
-		public boolean stopCellEditing() {
-			int minutos;
-			try {
-				minutos = parseMinutos(component.getText());
-			} catch (NumberFormatException e) {
-				JOptionPane.showMessageDialog(null, e.getMessage());
-				return false;
-			}
-			super.stopCellEditing();
-			if (minutos != valorAnterior) {
-				recalcularAlarmes(tblHorarios.getSelectedRow());
-			}
-			return true;
-				
-		}
-		
-		@Override
-		public Object getCellEditorValue() {
-			return component.getText(); 
-		}
-
-		@Override
-		public Component getTableCellEditorComponent(JTable table,
-				Object value, boolean isSelected, int row, int column) {
-			String hora = (String)value;
-			component.setText(hora);
-			valorAnterior = parseMinutos(hora);
-			return component;
-		} 
-		
-	}
 }
 
 
