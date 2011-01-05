@@ -67,13 +67,18 @@ public class Alarm implements Observer {
 		if (o instanceof TimeChecker) {
 			String hora = (String) arg;
 			alarmEditor.mostrarMensagemAlarme(hora);
-
 			beeper.beep();
 			
 		} else if (o instanceof AlarmEditor) {
 			String cmd = (String) arg;
 			if ("OK".equals(cmd)) {
-				beeper.mute();
+				beeper.stop();
+				
+			} else if ("MUTE_ON".equals(cmd)) {
+				beepConfig.setMute(true);
+				
+			} else if ("MUTE_OFF".equals(cmd)) {
+				beepConfig.setMute(false);
 				
 			} else if ("OPCOES".equals(cmd)) {
 				new PropertiesEditor(applicationProperties, new Validator(), PROPERTY_BEEPER_COMMAND,

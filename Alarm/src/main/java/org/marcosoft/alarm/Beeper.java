@@ -17,19 +17,21 @@ public class Beeper {
 		this.beepConfig = beepConfig;
 	}
 	
-	public void mute() {
+	public void stop() {
 		this.toStop = true;
 	}
 
 	public void beep() {
 		toStop = false;
 		for (int countBeep = 0; countBeep < beepConfig.getTimes(); countBeep++) {
-			try {
-				execute(beepConfig.getCommand());
-			} catch (Exception e) {
-				JOptionPane.showMessageDialog(null,
-						"I can't beep! " + e.getMessage());
-				break;
+			if (!beepConfig.isMute()) {
+				try {
+					execute(beepConfig.getCommand());
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(null,
+							"I can't beep! " + e.getMessage());
+					break;
+				}
 			}
 			sleep(beepConfig.getPause());
 			if (toStop) break;

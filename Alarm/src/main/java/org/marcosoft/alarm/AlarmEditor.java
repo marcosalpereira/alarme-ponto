@@ -17,6 +17,7 @@ import java.util.Observable;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -51,6 +52,8 @@ public class AlarmEditor extends Observable {
 	private Horarios horarios;
 
 	private JFrame win;
+
+	private JCheckBox chkMute;
 	
 	public AlarmEditor(Horarios horarios) {
 		initGUI();
@@ -129,8 +132,17 @@ public class AlarmEditor extends Observable {
 				jPanel1 = new JPanel();
 				FlowLayout jPanel1Layout = new FlowLayout();
 				jPanel1Layout.setAlignment(FlowLayout.RIGHT);
-				jPanel1.setLayout(jPanel1Layout);
+				jPanel1.setLayout(jPanel1Layout);				
 				{
+					chkMute = new JCheckBox();
+					chkMute.setText("Sem som");
+					jPanel1.add(chkMute);
+					chkMute.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent evt) {
+							chkMuteActionPerformed(evt);
+						}
+					});					
+					
 					btnOk = new JButton();
 					btnOpcoes = new JButton();
 					btnOpcoes.setText("Opções");
@@ -315,6 +327,10 @@ public class AlarmEditor extends Observable {
 		notifyObservers("OK");
 	}
 	
+	private void chkMuteActionPerformed(ActionEvent evt) {
+		notifyObservers(chkMute.isSelected() ? "MUTE_ON" : "MUTE_OFF");
+	}
+	
 	private void btnOpcoesActionPerformed(ActionEvent evt) {
 		notifyObservers("OPCOES");
 	}
@@ -347,6 +363,7 @@ public class AlarmEditor extends Observable {
 				public void mouseClicked(MouseEvent evt) {
 					if (evt.getClickCount() > 1 && component.isEnabled()) {
 						component.setText(getHoraCorrente());
+						stopCellEditing();
 					}					
 				}
 			});
@@ -385,7 +402,6 @@ public class AlarmEditor extends Observable {
 		} 
 		
 	}
-	
 
 }
 
