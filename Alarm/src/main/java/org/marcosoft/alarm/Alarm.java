@@ -105,8 +105,11 @@ public class Alarm implements Observer {
 		horarios.setSegundoTurnoEntrada(applicationProperties.getProperty("segundoTurnoEntrada", "00:00"));
 		horarios.setSegundoTurnoSaida(applicationProperties.getProperty("segundoTurnoSaida", "00:00"));
 		
-		horarios.setTurnoExtraEntrada(applicationProperties.getProperty("turnoExtraEntrada", "00:00"));
-		horarios.setTurnoExtraSaida(applicationProperties.getProperty("turnoExtraSaida", "00:00"));
+		horarios.setPrimeiroTurnoExtraEntrada(applicationProperties.getProperty("turnoExtraEntrada", "00:00"));
+		horarios.setPrimeiroTurnoExtraSaida(applicationProperties.getProperty("turnoExtraSaida", "00:00"));
+
+		horarios.setSegundoTurnoExtraEntrada(applicationProperties.getProperty("segundoTurnoExtraEntrada", "00:00"));
+		horarios.setSegundoTurnoExtraSaida(applicationProperties.getProperty("segundoTurnoExtraSaida", "00:00"));
 		
 		return horarios;
 	}
@@ -118,8 +121,11 @@ public class Alarm implements Observer {
 		applicationProperties.setProperty("segundoTurnoEntrada", horarios.getSegundoTurnoEntrada());
 		applicationProperties.setProperty("segundoTurnoSaida", horarios.getSegundoTurnoSaida());
 		
-		applicationProperties.setProperty("turnoExtraEntrada", horarios.getTurnoExtraEntrada());
-		applicationProperties.setProperty("turnoExtraSaida", horarios.getTurnoExtraSaida());
+		applicationProperties.setProperty("turnoExtraEntrada", horarios.getPrimeiroTurnoExtraEntrada());
+		applicationProperties.setProperty("turnoExtraSaida", horarios.getPrimeiroTurnoExtraSaida());
+
+		applicationProperties.setProperty("segundoTurnoExtraEntrada", horarios.getSegundoTurnoExtraEntrada());
+		applicationProperties.setProperty("segundoTurnoExtraSaida", horarios.getSegundoTurnoExtraSaida());
 	}
 	
 }

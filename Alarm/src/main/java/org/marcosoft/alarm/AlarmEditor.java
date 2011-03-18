@@ -41,6 +41,19 @@ public class AlarmEditor extends Observable {
 	
 	private static final int COL_HORA = 1;
 	
+	private static final int ROW_PRIMEIRO_TURNO_ENTRADA = 0;
+	private static final int ROW_PRIMEIRO_TURNO_SAIDA = 1;
+	
+	private static final int ROW_SEGUNDO_TURNO_ENTRADA = 2;
+	private static final int ROW_SEGUNDO_TURNO_SAIDA = 3;
+	
+	private static final int ROW_PRIMEIRO_TURNO_EXTRA_ENTRADA = 4;
+	private static final int ROW_PRIMEIRO_TURNO_EXTRA_SAIDA = 5;
+	
+	private static final int ROW_SEGUNDO_TURNO_EXTRA_ENTRADA = 6;
+	private static final int ROW_SEGUNDO_TURNO_EXTRA_SAIDA = 7;
+	
+	
 	private JScrollPane jScrollPane1;
 	private JTable tblHorarios;
 	private JLabel lblMessage;
@@ -102,6 +115,7 @@ public class AlarmEditor extends Observable {
 											{ "1º Período - Entrada", "00:00" }, { "1º Período - Saída", "00:00" }, 
 											{ "2º Período - Entrada", "00:00" }, { "2º Período - Saída", "00:00" }, 
 											{ "1º Período - Extra - Entrada", "00:00" }, { "1º Período - Extra - Saída", "00:00" }, 
+											{ "2º Período - Extra - Entrada", "00:00" }, { "2º Período - Extra - Saída", "00:00" }, 
 										},
 								new String[] { "Período", "Hora" });
 					
@@ -185,78 +199,100 @@ public class AlarmEditor extends Observable {
 
 	private void recalcularAlarmes(int indice) {
 		switch (indice) {
-			case 0:
+			case ROW_PRIMEIRO_TURNO_ENTRADA:
 				entradaPrimeiroTurnoAlterada();
 				break;
-			case 1:
+			case ROW_PRIMEIRO_TURNO_SAIDA:
 				saidaPrimeiroTurnoAlterada();
 				break;
-			case 2:
+			case ROW_SEGUNDO_TURNO_ENTRADA:
 				entradaSegundoTurnoAlterada();
 				break;
-			case 3:
+			case ROW_SEGUNDO_TURNO_SAIDA:
 				saidaSegundoTurnoAlterada();
 				break;
-			case 4:
-				entradaTurnoExtraAlterada();
+			case ROW_PRIMEIRO_TURNO_EXTRA_ENTRADA:
+				entradaPrimeiroTurnoExtraAlterada();
 				break;
-			case 5:
-				saidaTurnoExtraAlterada();
+			case ROW_PRIMEIRO_TURNO_EXTRA_SAIDA:
+				saidaPrimeiroTurnoExtraAlterada();
+				break;
+			case ROW_SEGUNDO_TURNO_EXTRA_ENTRADA:
+				entradaSegundoTurnoExtraAlterada();
+				break;
+			case ROW_SEGUNDO_TURNO_EXTRA_SAIDA:
+				saidaSegundoTurnoExtraAlterada();
 				break;
 		}
 		atualizarHorarios();
 	}
 
 	private void atualizarHorarios() {
-		horarios.setPrimeiroTurnoEntrada(getHora(0));
-		horarios.setPrimeiroTurnoSaida(getHora(1));
+		horarios.setPrimeiroTurnoEntrada(getHora(ROW_PRIMEIRO_TURNO_ENTRADA));
+		horarios.setPrimeiroTurnoSaida(getHora(ROW_PRIMEIRO_TURNO_SAIDA));
 		
-		horarios.setSegundoTurnoEntrada(getHora(2));
-		horarios.setSegundoTurnoSaida(getHora(3));
+		horarios.setSegundoTurnoEntrada(getHora(ROW_SEGUNDO_TURNO_ENTRADA));
+		horarios.setSegundoTurnoSaida(getHora(ROW_SEGUNDO_TURNO_SAIDA));
 		
-		horarios.setTurnoExtraEntrada(getHora(4));
-		horarios.setTurnoExtraSaida(getHora(5));
+		horarios.setPrimeiroTurnoExtraEntrada(getHora(ROW_PRIMEIRO_TURNO_EXTRA_ENTRADA));
+		horarios.setPrimeiroTurnoExtraSaida(getHora(ROW_PRIMEIRO_TURNO_EXTRA_SAIDA));
+
+		horarios.setSegundoTurnoExtraEntrada(getHora(ROW_SEGUNDO_TURNO_EXTRA_ENTRADA));
+		horarios.setSegundoTurnoExtraSaida(getHora(ROW_SEGUNDO_TURNO_EXTRA_SAIDA));
 		
 		horarios.notifyObservers();
 	}
 
-	private void saidaTurnoExtraAlterada() {				
+	private void saidaSegundoTurnoExtraAlterada() {
+		
+	}
+
+	private void entradaSegundoTurnoExtraAlterada() {
+		int minExtrasRealizados = getHoraEmMinutos(ROW_PRIMEIRO_TURNO_EXTRA_SAIDA) - 
+			getHoraEmMinutos(ROW_PRIMEIRO_TURNO_EXTRA_ENTRADA);
+		int minExtrasRestantes = 2 * 60 - minExtrasRealizados;
+		setMinutos(7, minExtrasRestantes + getHoraEmMinutos(ROW_SEGUNDO_TURNO_EXTRA_ENTRADA));
+		saidaSegundoTurnoExtraAlterada();
 	}
 	
-	private void entradaTurnoExtraAlterada() {
-		int min = getHoraEmMinutos(4);
+	
+	private void saidaPrimeiroTurnoExtraAlterada() {
+	}
+	
+	private void entradaPrimeiroTurnoExtraAlterada() {
+		int min = getHoraEmMinutos(ROW_PRIMEIRO_TURNO_EXTRA_ENTRADA);
 		min += 2 * 60;
 		setMinutos(5, min);
-		saidaTurnoExtraAlterada();
+		saidaPrimeiroTurnoExtraAlterada();
 	}
 	
 	private void saidaSegundoTurnoAlterada() {
-		int min = getHoraEmMinutos(3);
+		int min = getHoraEmMinutos(ROW_SEGUNDO_TURNO_SAIDA);
 		min += 15;
 		setMinutos(4, min);
-		entradaTurnoExtraAlterada();	
+		entradaPrimeiroTurnoExtraAlterada();	
 	}
 
 	private void entradaPrimeiroTurnoAlterada() {
-		int min = getHoraEmMinutos(0);
+		int min = getHoraEmMinutos(ROW_PRIMEIRO_TURNO_ENTRADA);
 		min += 4 * 60;
 		setMinutos(1, min);
 		saidaPrimeiroTurnoAlterada();
 	}
 	
 	private void saidaPrimeiroTurnoAlterada() {
-		int min = getHoraEmMinutos(1);
+		int min = getHoraEmMinutos(ROW_PRIMEIRO_TURNO_SAIDA);
 		min += 60;
 		setMinutos(2, min);
 		entradaSegundoTurnoAlterada();
 	}
 	
 	private void entradaSegundoTurnoAlterada() {
-		int p0 = getHoraEmMinutos(0);
-		int p1 = getHoraEmMinutos(1);
+		int p0 = getHoraEmMinutos(ROW_PRIMEIRO_TURNO_ENTRADA);
+		int p1 = getHoraEmMinutos(ROW_PRIMEIRO_TURNO_SAIDA);
 		int primeiroTurno = p1 - p0;
 		
-		int p2 = getHoraEmMinutos(2);
+		int p2 = getHoraEmMinutos(ROW_SEGUNDO_TURNO_ENTRADA);
 		
 		int minutosFaltam = 8 * 60 - primeiroTurno;
 		int p3 = p2 + minutosFaltam;

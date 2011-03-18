@@ -11,8 +11,11 @@ public class Horarios extends Observable {
 	private String segundoTurnoEntrada;
 	private String segundoTurnoSaida;
 	
-	private String turnoExtraEntrada;
-	private String turnoExtraSaida;
+	private String primeiroTurnoExtraEntrada;
+	private String primeiroTurnoExtraSaida;
+
+	private String segundoTurnoExtraEntrada;
+	private String segundoTurnoExtraSaida;
 	
 	public String getPrimeiroTurnoEntrada() {
 		return primeiroTurnoEntrada;
@@ -38,19 +41,31 @@ public class Horarios extends Observable {
 	public void setSegundoTurnoSaida(String segundoTurnoSaida) {
 		this.segundoTurnoSaida = segundoTurnoSaida;
 	}
-	public String getTurnoExtraEntrada() {
-		return turnoExtraEntrada;
+	public String getPrimeiroTurnoExtraEntrada() {
+		return primeiroTurnoExtraEntrada;
 	}
-	public void setTurnoExtraEntrada(String turnoExtraEntrada) {
-		this.turnoExtraEntrada = turnoExtraEntrada;
+	public void setPrimeiroTurnoExtraEntrada(String turnoExtraEntrada) {
+		this.primeiroTurnoExtraEntrada = turnoExtraEntrada;
 	}
-	public String getTurnoExtraSaida() {
-		return turnoExtraSaida;
+	public String getPrimeiroTurnoExtraSaida() {
+		return primeiroTurnoExtraSaida;
 	}
-	public void setTurnoExtraSaida(String turnoExtraSaida) {
-		this.turnoExtraSaida = turnoExtraSaida;
+	public void setPrimeiroTurnoExtraSaida(String turnoExtraSaida) {
+		this.primeiroTurnoExtraSaida = turnoExtraSaida;
 	}
 
+	public String getSegundoTurnoExtraEntrada() {
+		return segundoTurnoExtraEntrada;
+	}
+	public void setSegundoTurnoExtraEntrada(String segundoTurnoExtraEntrada) {
+		this.segundoTurnoExtraEntrada = segundoTurnoExtraEntrada;
+	}
+	public String getSegundoTurnoExtraSaida() {
+		return segundoTurnoExtraSaida;
+	}
+	public void setSegundoTurnoExtraSaida(String segundoTurnoExtraSaida) {
+		this.segundoTurnoExtraSaida = segundoTurnoExtraSaida;
+	}
 	/**
 	 * Verifica se é hora de alarmar.
 	 * @return a hora de alarme ou <code>null</code>
@@ -68,8 +83,9 @@ public class Horarios extends Observable {
 	
 	public String[] asArray() {
 		return new String[] { primeiroTurnoEntrada, primeiroTurnoSaida,
-			segundoTurnoEntrada, segundoTurnoSaida, turnoExtraEntrada,
-			turnoExtraSaida };
+			segundoTurnoEntrada, segundoTurnoSaida, primeiroTurnoExtraEntrada,
+			primeiroTurnoExtraSaida, segundoTurnoExtraEntrada,
+			segundoTurnoExtraSaida };
 	}
 	
 	/**
