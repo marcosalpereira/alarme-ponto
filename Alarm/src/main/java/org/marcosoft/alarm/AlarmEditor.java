@@ -1,5 +1,5 @@
 package org.marcosoft.alarm;
-import static org.marcosoft.util.HoraUtils.formatHoras;
+import static org.marcosoft.util.HoraUtils.*;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -138,7 +138,6 @@ public class AlarmEditor extends Observable {
 	public AlarmEditor(Horarios horarios) {
 		initGUI();
 		this.horarios = horarios;
-		lblMessage.setVisible(false);
 		atualizarView(horarios);
 	}
 
@@ -156,7 +155,6 @@ public class AlarmEditor extends Observable {
 	private void btnOkActionPerformed(ActionEvent evt) {
 		win.setExtendedState(Frame.ICONIFIED);
 		lblMessage.setVisible(false);
-		
 		notifyObservers("OK");
 	}
 
@@ -392,11 +390,11 @@ public class AlarmEditor extends Observable {
 								GridBagConstraints.CENTER,
 								GridBagConstraints.BOTH,
 								new Insets(0, 0, 0, 0), 0, 0));
-				lblMessage.setText("jLabel1");
+				lblMessage.setText("Proximo Alarme em: ");
 				lblMessage.setFont(new java.awt.Font("Verdana",1,14));
 				lblMessage.setOpaque(true);
-				lblMessage.setBackground(new java.awt.Color(255,0,0));
-				lblMessage.setForeground(new java.awt.Color(255,255,255));
+				lblMessage.setBackground(new java.awt.Color(225,225,225));
+				lblMessage.setForeground(new java.awt.Color(0,0,0));
 				lblMessage.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 			}
 			txtUser.setText(System.getProperty("user.name"));
@@ -412,11 +410,20 @@ public class AlarmEditor extends Observable {
 		}
 	}
 	
-	public void mostrarMensagemAlarme(String hora) {
+	public void mostrarMensagemAlarme() {
 		lblMessage.setVisible(true);
-		lblMessage.setText("Alarme: " + hora);
+		lblMessage.setBackground(Color.red);
+		lblMessage.setForeground(new java.awt.Color(255,255,255));
+		lblMessage.setText("Alarme: " + getHoraCorrente());
 		win.setExtendedState(Frame.NORMAL);
 	}
+	
+	public void mostrarProximoAlarme(int segundos) {		
+		lblMessage.setVisible(true);
+		lblMessage.setBackground(new Color(225, 225, 225));		
+		lblMessage.setForeground(new java.awt.Color(0,0,0));
+		lblMessage.setText("Próximo Alarme em: " + formatHorasSegundos(segundos));
+	}	
 
 	@Override
 	public void notifyObservers(Object arg) {

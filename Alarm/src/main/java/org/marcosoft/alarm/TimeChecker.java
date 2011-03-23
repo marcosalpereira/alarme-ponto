@@ -4,11 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 
+import org.marcosoft.util.HoraUtils;
+
 /**
  * Continuamente checa se é hora de alarmar.
  */
 public class TimeChecker extends Observable implements Runnable {
-	private Map<String, Boolean> alarmados = new HashMap<String, Boolean>();
+	private Map<Integer, Boolean> alarmados = new HashMap<Integer, Boolean>();
 	private Horarios horarios;
 	
 	public TimeChecker(Horarios horarios) {
@@ -18,11 +20,18 @@ public class TimeChecker extends Observable implements Runnable {
 	@Override
 	public void run() {
 		for (;;) {
-			String hora = horarios.isHoraAlarme();
-			if (hora != null && alarmados.get(hora) == null) {
-				alarmados.put(hora, true);
-				
-				notifyObservers(hora);
+			int minutosCorrente = HoraUtils.getHoraCorrenteEmMinutos();
+			int segundosCorrente = HoraUtils.getHoraCorrenteEmSegundos();
+			int proximoAlarme = horarios.getProximoAlarme(minutosCorrente);
+			if (proximoAlarme > 0) {
+				if (proximoAlarme == minutosCorrente) {
+					if (alarmados.get(proximoAlarme) == null) {
+						alarmados.put(proximoAlarme, true);				
+						notifyObservers(0);
+					}					
+				} else {
+					notifyObservers(proximoAlarme * 60 - segundosCorrente);
+				}
 			}
 			sleep(1000);
 		}			
@@ -40,6 +49,6 @@ public class TimeChecker extends Observable implements Runnable {
 		} catch (InterruptedException e) {
 
 		}
-	}	
-
+	}
+	
 }

@@ -65,9 +65,13 @@ public class Alarm implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		if (o instanceof TimeChecker) {
-			String hora = (String) arg;
-			alarmEditor.mostrarMensagemAlarme(hora);
-			beeper.beep();
+			Integer segundos = (Integer) arg;
+			if (segundos == 0) {
+				alarmEditor.mostrarMensagemAlarme();
+				beeper.beep();
+			} else {
+				alarmEditor.mostrarProximoAlarme(segundos);
+			}
 			
 		} else if (o instanceof AlarmEditor) {
 			String cmd = (String) arg;
