@@ -10,45 +10,57 @@ import org.marcosoft.util.HoraUtils;
  * Continuamente checa se é hora de alarmar.
  */
 public class TimeChecker extends Observable implements Runnable {
-	private Map<Integer, Boolean> alarmados = new HashMap<Integer, Boolean>();
-	private Horarios horarios;
-	
+	private final Map<String, Boolean> alarmados = new HashMap<String, Boolean>();
+	private final Horarios horarios;
+
 	public TimeChecker(Horarios horarios) {
 		this.horarios = horarios;
 	}
-	
+
 	@Override
 	public void run() {
 		for (;;) {
-			int minutosCorrente = HoraUtils.getHoraCorrenteEmMinutos();
-			int segundosCorrente = HoraUtils.getHoraCorrenteEmSegundos();
-			int proximoAlarme = horarios.getProximoAlarme(minutosCorrente);
+			final int minutosCorrente = HoraUtils.getHoraCorrenteEmMinutos();
+			final int segundosCorrente = HoraUtils.getHoraCorrenteEmSegundos();
+			final int proximoAlarme = horarios.getProximoAlarme(minutosCorrente);
 			if (proximoAlarme > 0) {
 				if (proximoAlarme == minutosCorrente) {
-					if (alarmados.get(proximoAlarme) == null) {
-						alarmados.put(proximoAlarme, true);				
+					if (isJaAlarmado(proximoAlarme)) {
+						registrarAlarme(proximoAlarme);
 						notifyObservers(0);
-					}					
+					}
 				} else {
 					notifyObservers(proximoAlarme * 60 - segundosCorrente);
 				}
 			}
 			sleep(1000);
-		}			
+		}
 	}
-	
+
+	private void registrarAlarme(int proximoAlarme) {
+	    alarmados.put(getChaveAlarmados(proximoAlarme), true);
+    }
+
+	private String getChaveAlarmados(int proximoAlarme) {
+	    return HoraUtils.dataAtualAsString() + proximoAlarme;
+    }
+
+	private boolean isJaAlarmado(int proximoAlarme) {
+	    return alarmados.get(getChaveAlarmados(proximoAlarme)) == null;
+    }
+
 	@Override
 	public void notifyObservers(Object arg) {
 		setChanged();
 		super.notifyObservers(arg);
 	}
-	
+
 	private void sleep(int milis) {
 		try {
 			Thread.sleep(milis);
-		} catch (InterruptedException e) {
+		} catch (final InterruptedException e) {
 
 		}
 	}
-	
+
 }
