@@ -109,8 +109,6 @@ public class AlarmEditor extends Observable {
 
 	}
 
-	private static final long serialVersionUID = -1045806326715430034L;
-
 	private static final int COL_TURNO = 0;
 	private static final int COL_HORA = 1;
 	private static final int COL_ACUMULADO = 2;
@@ -133,6 +131,7 @@ public class AlarmEditor extends Observable {
 	private JButton btnOpcoes;
 	private JPanel jPanel1;
 	private JButton btnOk;
+	private JButton btnSiscop;
 	private JLabel lblMinutosSaldo;
 	private JTextField txtMinutosSaldo;
 	private JPanel panMinutos;
@@ -165,6 +164,10 @@ public class AlarmEditor extends Observable {
 		win.setAlwaysOnTop(false);
 		lblMessage.setVisible(false);
 		notifyObservers("OK");
+	}
+
+	private void btnSiscopActionPerformed(ActionEvent evt) {
+		notifyObservers("SISCOP");
 	}
 
 	private void btnOpcoesActionPerformed(ActionEvent evt) {
@@ -421,7 +424,6 @@ public class AlarmEditor extends Observable {
 						}
 					});
 
-					btnOk = new JButton();
 					btnOpcoes = new JButton();
 					btnOpcoes.setText("Opções");
 					btnOpcoes.setPreferredSize(new java.awt.Dimension(100, 22));
@@ -432,6 +434,8 @@ public class AlarmEditor extends Observable {
 						}
 					});
 					jPanel1.add(btnOpcoes);
+
+					btnOk = new JButton();
 					jPanel1.add(btnOk);
 					btnOk.setText("Minimizar");
 					btnOk.setPreferredSize(new java.awt.Dimension(110, 22));
@@ -439,6 +443,18 @@ public class AlarmEditor extends Observable {
 						@Override
                         public void actionPerformed(ActionEvent evt) {
 							btnOkActionPerformed(evt);
+						}
+					});
+
+					btnSiscop = new JButton();
+					jPanel1.add(btnSiscop);
+					btnSiscop.setText("Siscop");
+					btnSiscop.setToolTipText("Abrir Siscop");
+					btnSiscop.setPreferredSize(new java.awt.Dimension(110, 22));
+					btnSiscop.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent evt) {
+							btnSiscopActionPerformed(evt);
 						}
 					});
 				}
@@ -457,7 +473,7 @@ public class AlarmEditor extends Observable {
 			}
 
 			win.pack();
-			win.setSize(400, 350);
+			win.setSize(500, 350);
 			SwingUtil.center(win);
 			win.setVisible(true);
 		} catch (final Exception e) {

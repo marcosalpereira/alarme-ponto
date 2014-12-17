@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class SystemUtil {
-	
+
 	public static String getAppVersion() {
 	        final String ret = "?";
 	        final InputStream stream = SystemUtil.class.getClassLoader().getResourceAsStream(
@@ -20,5 +20,13 @@ public class SystemUtil {
 	        }
 	        return ret;
 	    }
+
+    public static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (final InterruptedException e) {
+            return;
+        }
+    }
 }
 
