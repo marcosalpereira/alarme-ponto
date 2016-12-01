@@ -1,4 +1,5 @@
 package org.marcosoft.alarm;
+
 import static org.marcosoft.util.HoraUtils.formatHoras;
 import static org.marcosoft.util.HoraUtils.formatHorasSegundos;
 
@@ -45,8 +46,8 @@ import javax.swing.table.TableModel;
 import javax.swing.text.MaskFormatter;
 
 import org.marcosoft.alarm.Horarios.Turnos;
-import org.marcosoft.util.SwingUtil;
-import org.marcosoft.util.SystemUtil;
+import org.marcosoft.lib.App;
+import org.marcosoft.lib.SwingUtil;
 
 public class AlarmEditor extends Observable {
 
@@ -64,7 +65,7 @@ public class AlarmEditor extends Observable {
 
 			component.addMouseListener(new MouseAdapter() {
 				@Override
-                public void mouseClicked(MouseEvent evt) {
+				public void mouseClicked(MouseEvent evt) {
 					if (evt.getClickCount() > 1 && component.isEnabled()) {
 						component.setText(getHoraCorrente());
 						stopCellEditing();
@@ -74,15 +75,13 @@ public class AlarmEditor extends Observable {
 
 		}
 
-		@Override
 		public Object getCellEditorValue() {
 			return component.getText();
 		}
 
-		@Override
-		public Component getTableCellEditorComponent(JTable table,
-				Object value, boolean isSelected, int row, int column) {
-			final String hora = (String)value;
+		public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
+				int column) {
+			final String hora = (String) value;
 			component.setText(hora);
 			component.setSelectionStart(0);
 			component.setSelectionEnd(hora.length());
@@ -141,9 +140,11 @@ public class AlarmEditor extends Observable {
 	private JFrame win;
 
 	private JCheckBox chkMute;
+	private JLabel lblMinutosIntervalo;
+	private JTextField txtMinutosIntervalo;
 
-	public AlarmEditor(Horarios horarios) {
-		initGUI();
+	public AlarmEditor(App app, Horarios horarios) {
+		initGUI(app);
 		this.horarios = horarios;
 		atualizarView(horarios);
 	}
@@ -229,6 +230,18 @@ public class AlarmEditor extends Observable {
 		}
 	}
 
+	private int getMinutosIntervalo() {
+		try {
+			final String text = txtMinutosIntervalo.getText().trim();
+			if (text.length() == 0) {
+				return 0;
+			}
+			return Integer.parseInt(text);
+		} catch (final NumberFormatException e) {
+		}
+		return -1;
+	}
+
 	private void entradaSegundoTurnoExtraAlterada() {
 		final int minExtrasRealizados = horarios.getDuracaoPrimeiroTurnoExtra();
 		final int minExtrasRestantes = 2 * 60 - minExtrasRealizados;
@@ -239,6 +252,7 @@ public class AlarmEditor extends Observable {
 
 	/**
 	 * Pegar a hora na linha informada.
+	 *
 	 * @param row
 	 * @return a hora
 	 */
@@ -249,6 +263,7 @@ public class AlarmEditor extends Observable {
 
 	/**
 	 * Retorna a hora corrente no formato hh:mm.
+	 *
 	 * @return a hora
 	 */
 	private String getHoraCorrente() {
@@ -263,13 +278,11 @@ public class AlarmEditor extends Observable {
 		private static final long serialVersionUID = 1L;
 
 		@Override
-        public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int column) {
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+				int row, int column) {
 
-			final JLabel renderedLabel = (JLabel) super
-					.getTableCellRendererComponent(table, value, isSelected,
-							hasFocus, row, column);
+			final JLabel renderedLabel = (JLabel) super.getTableCellRendererComponent(table, value, isSelected,
+					hasFocus, row, column);
 
 			switch (column) {
 			case COL_TURNO:
@@ -284,7 +297,7 @@ public class AlarmEditor extends Observable {
 				renderedLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				break;
 			}
-			if ( ((String) table.getValueAt(row, COL_TURNO)).isEmpty()) {
+			if (((String) table.getValueAt(row, COL_TURNO)).isEmpty()) {
 				renderedLabel.setBackground(new Color(238, 238, 238));
 			} else {
 				renderedLabel.setBackground(Color.white);
@@ -294,25 +307,21 @@ public class AlarmEditor extends Observable {
 		}
 	}
 
-	private void initGUI() {
+	private void initGUI(App app) {
 		try {
 			win = new JFrame();
 			final GridBagLayout thisLayout = new GridBagLayout();
 			win.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			thisLayout.rowWeights = new double[] {0.0, 1.0, 0.0, 0.0};
-			thisLayout.rowHeights = new int[] {7, 7, 7, 7};
-			thisLayout.columnWeights = new double[] {0.1};
-			thisLayout.columnWidths = new int[] {7};
+			thisLayout.rowWeights = new double[] { 0.0, 1.0, 0.0, 0.0 };
+			thisLayout.rowHeights = new int[] { 7, 7, 7, 7 };
+			thisLayout.columnWeights = new double[] { 0.1 };
+			thisLayout.columnWidths = new int[] { 7 };
 			win.getContentPane().setLayout(thisLayout);
-			win.setTitle("Alarme Ponto " + SystemUtil.getAppVersion() + " " + System.getProperty("user.name"));
+			win.setTitle(app.getTitle() + " v" + app.getVersion());
 			{
 				jScrollPane1 = new JScrollPane();
-				win.getContentPane().add(
-						jScrollPane1,
-						new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-								GridBagConstraints.CENTER,
-								GridBagConstraints.BOTH,
-								new Insets(0, 0, 0, 0), 0, 0));
+				win.getContentPane().add(jScrollPane1, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+						GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 				{
 					panMinutos = new JPanel();
 					final FlowLayout panMinutosLayout = new FlowLayout();
@@ -338,7 +347,8 @@ public class AlarmEditor extends Observable {
 									return false;
 
 								} else if (min >= 8 * 60) {
-									JOptionPane.showMessageDialog(win, "Que é que voçê está fazendo aqui!!! Vá pra casa!!!!");
+									JOptionPane.showMessageDialog(win,
+											"Que é que voçê está fazendo aqui!!! Vá pra casa!!!!");
 									return false;
 								}
 								recalcularAlarmes(ROW_SEGUNDO_TURNO_ENTRADA);
@@ -347,28 +357,46 @@ public class AlarmEditor extends Observable {
 						});
 					}
 
-					win.getContentPane().add(
-							panMinutos,
-							new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-									GridBagConstraints.CENTER,
-									GridBagConstraints.BOTH,
-									new Insets(0, 0, 0, 0), 0, 0));
+			this.lblMinutosIntervalo = new JLabel();
+			this.panMinutos.add(this.lblMinutosIntervalo);
+			this.lblMinutosIntervalo.setText("Minutos de Intervalo:");
+
+			this.txtMinutosIntervalo = new JTextField();
+			this.panMinutos.add(this.txtMinutosIntervalo);
+			this.txtMinutosIntervalo.setToolTipText("Minutos de intervalo para horário extra");
+			this.txtMinutosIntervalo.setText("0");
+			this.txtMinutosIntervalo.setBorder(javax.swing.BorderFactory.createLoweredBevelBorder());
+			this.txtMinutosIntervalo.setPreferredSize(new Dimension(52, 22));
+			this.txtMinutosIntervalo.setInputVerifier(new javax.swing.InputVerifier() {
+				@Override
+				public boolean verify(javax.swing.JComponent input) {
+					final int min = AlarmEditor.this.getMinutosIntervalo();
+					if (min < 0) {
+						JOptionPane.showMessageDialog(AlarmEditor.this.win, "Valor inválido!");
+						return false;
+					}
+					AlarmEditor.this.recalcularAlarmes(4);
+					return true;
+
+				}
+
+			});
+
+					win.getContentPane().add(panMinutos, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+							GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 
 				}
 
 				{
-					final TableModel tblHorariosModel =
-						new DefaultTableModel(
-								new Object[][] {
-											{ "1º Período - Entrada", "00:00", "" }, { "1º Período - Saída", "00:00", "" },
-											{ "", "", "" },
-											{ "2º Período - Entrada", "00:00", "" }, { "2º Período - Saída", "00:00", "" },
-											{ "", "", "" },
-											{ "1º Período - Extra - Entrada", "00:00", "" }, { "1º Período - Extra - Saída", "00:00", "" },
-											{ "", "", "" },
-											{ "2º Período - Extra - Entrada", "00:00", "" }, { "2º Período - Extra - Saída", "00:00", "" },
-										},
-								new String[] { "Período", "Hora", "Duração (Acumulado)" });
+					final TableModel tblHorariosModel = new DefaultTableModel(
+							new Object[][] { { "1º Período - Entrada", "00:00", "" },
+									{ "1º Período - Saída", "00:00", "" }, { "", "", "" },
+									{ "2º Período - Entrada", "00:00", "" }, { "2º Período - Saída", "00:00", "" },
+									{ "", "", "" }, { "1º Período - Extra - Entrada", "00:00", "" },
+									{ "1º Período - Extra - Saída", "00:00", "" }, { "", "", "" },
+									{ "2º Período - Extra - Entrada", "00:00", "" },
+									{ "2º Período - Extra - Saída", "00:00", "" }, },
+							new String[] { "Período", "Hora", "Duração (Acumulado)" });
 
 					tblHorarios = new JTable() {
 						private static final long serialVersionUID = 1L;
@@ -380,8 +408,7 @@ public class AlarmEditor extends Observable {
 						}
 
 						@Override
-						public TableCellRenderer getCellRenderer(int row,
-								int column) {
+						public TableCellRenderer getCellRenderer(int row, int column) {
 							return renderer;
 						}
 					};
@@ -403,12 +430,8 @@ public class AlarmEditor extends Observable {
 			}
 			{
 				lblMessage = new JLabel();
-				win.getContentPane().add(
-						lblMessage,
-						new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-								GridBagConstraints.CENTER,
-								GridBagConstraints.BOTH,
-								new Insets(2, 2, 2, 2), 0, 0));
+				win.getContentPane().add(lblMessage, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+						GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
 				jPanel1 = new JPanel();
 				final FlowLayout jPanel1Layout = new FlowLayout();
 				jPanel1Layout.setAlignment(FlowLayout.RIGHT);
@@ -418,8 +441,7 @@ public class AlarmEditor extends Observable {
 					chkMute.setText("Sem som");
 					jPanel1.add(chkMute);
 					chkMute.addActionListener(new ActionListener() {
-						@Override
-                        public void actionPerformed(ActionEvent evt) {
+						public void actionPerformed(ActionEvent evt) {
 							chkMuteActionPerformed(evt);
 						}
 					});
@@ -428,8 +450,7 @@ public class AlarmEditor extends Observable {
 					btnOpcoes.setText("Opções");
 					btnOpcoes.setPreferredSize(new java.awt.Dimension(100, 22));
 					btnOpcoes.addActionListener(new ActionListener() {
-						@Override
-                        public void actionPerformed(ActionEvent evt) {
+						public void actionPerformed(ActionEvent evt) {
 							btnOpcoesActionPerformed(evt);
 						}
 					});
@@ -440,8 +461,7 @@ public class AlarmEditor extends Observable {
 					btnOk.setText("Minimizar");
 					btnOk.setPreferredSize(new java.awt.Dimension(110, 22));
 					btnOk.addActionListener(new ActionListener() {
-						@Override
-                        public void actionPerformed(ActionEvent evt) {
+						public void actionPerformed(ActionEvent evt) {
 							btnOkActionPerformed(evt);
 						}
 					});
@@ -452,23 +472,18 @@ public class AlarmEditor extends Observable {
 					btnSiscop.setToolTipText("Abrir Siscop");
 					btnSiscop.setPreferredSize(new java.awt.Dimension(110, 22));
 					btnSiscop.addActionListener(new ActionListener() {
-						@Override
 						public void actionPerformed(ActionEvent evt) {
 							btnSiscopActionPerformed(evt);
 						}
 					});
 				}
-				win.getContentPane().add(
-						jPanel1,
-						new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
-								GridBagConstraints.CENTER,
-								GridBagConstraints.BOTH,
-								new Insets(0, 0, 0, 0), 0, 0));
+				win.getContentPane().add(jPanel1, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0,
+						GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 				lblMessage.setText("Proximo Alarme em: ");
-				lblMessage.setFont(new java.awt.Font("Verdana",1,14));
+				lblMessage.setFont(new java.awt.Font("Verdana", 1, 14));
 				lblMessage.setOpaque(true);
-				lblMessage.setBackground(new java.awt.Color(225,225,225));
-				lblMessage.setForeground(new java.awt.Color(0,0,0));
+				lblMessage.setBackground(new java.awt.Color(225, 225, 225));
+				lblMessage.setForeground(new java.awt.Color(0, 0, 0));
 				lblMessage.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 			}
 
@@ -477,7 +492,7 @@ public class AlarmEditor extends Observable {
 			SwingUtil.center(win);
 			win.setVisible(true);
 		} catch (final Exception e) {
-		    //add your error handling code here
+			// add your error handling code here
 			e.printStackTrace();
 		}
 	}
@@ -485,7 +500,7 @@ public class AlarmEditor extends Observable {
 	public void mostrarMensagemAlarme() {
 		lblMessage.setVisible(true);
 		lblMessage.setBackground(Color.red);
-		lblMessage.setForeground(new java.awt.Color(255,255,255));
+		lblMessage.setForeground(new java.awt.Color(255, 255, 255));
 		lblMessage.setText("Alarme: " + getHoraCorrente());
 		win.setAlwaysOnTop(true);
 		win.setExtendedState(Frame.NORMAL);
@@ -494,7 +509,7 @@ public class AlarmEditor extends Observable {
 	public void mostrarProximoAlarme(int segundos) {
 		lblMessage.setVisible(true);
 		lblMessage.setBackground(new Color(225, 225, 225));
-		lblMessage.setForeground(new java.awt.Color(0,0,0));
+		lblMessage.setForeground(new java.awt.Color(0, 0, 0));
 		lblMessage.setText("Próximo Alarme em: " + formatHorasSegundos(segundos));
 	}
 
@@ -503,9 +518,12 @@ public class AlarmEditor extends Observable {
 		setChanged();
 		super.notifyObservers(arg);
 	}
+
 	/**
 	 * Converte hora em minutos.
-	 * @param hora hora
+	 *
+	 * @param hora
+	 *            hora
 	 * @return a hora ou 0 em caso de erro
 	 */
 	private int parseMinutos(String hora) {
@@ -529,38 +547,38 @@ public class AlarmEditor extends Observable {
 
 	private void recalcularAlarmes(int linha) {
 		switch (linha) {
-			case ROW_PRIMEIRO_TURNO_ENTRADA:
-				horarios.setPrimeiroTurnoEntrada(getHora(linha));
-				entradaPrimeiroTurnoAlterada();
-				break;
-			case ROW_PRIMEIRO_TURNO_SAIDA:
-				horarios.setPrimeiroTurnoSaida(getHora(linha));
-				saidaPrimeiroTurnoAlterada();
-				break;
-			case ROW_SEGUNDO_TURNO_ENTRADA:
-				horarios.setSegundoTurnoEntrada(getHora(linha));
-				entradaSegundoTurnoAlterada();
-				break;
-			case ROW_SEGUNDO_TURNO_SAIDA:
-				horarios.setSegundoTurnoSaida(getHora(linha));
-				saidaSegundoTurnoAlterada();
-				break;
-			case ROW_PRIMEIRO_TURNO_EXTRA_ENTRADA:
-				horarios.setPrimeiroTurnoExtraEntrada(getHora(linha));
-				entradaPrimeiroTurnoExtraAlterada();
-				break;
-			case ROW_PRIMEIRO_TURNO_EXTRA_SAIDA:
-				horarios.setPrimeiroTurnoExtraSaida(getHora(linha));
-				saidaPrimeiroTurnoExtraAlterada();
-				break;
-			case ROW_SEGUNDO_TURNO_EXTRA_ENTRADA:
-				horarios.setSegundoTurnoExtraEntrada(getHora(linha));
-				entradaSegundoTurnoExtraAlterada();
-				break;
-			case ROW_SEGUNDO_TURNO_EXTRA_SAIDA:
-				horarios.setSegundoTurnoExtraSaida(getHora(linha));
-				saidaSegundoTurnoExtraAlterada();
-				break;
+		case ROW_PRIMEIRO_TURNO_ENTRADA:
+			horarios.setPrimeiroTurnoEntrada(getHora(linha));
+			entradaPrimeiroTurnoAlterada();
+			break;
+		case ROW_PRIMEIRO_TURNO_SAIDA:
+			horarios.setPrimeiroTurnoSaida(getHora(linha));
+			saidaPrimeiroTurnoAlterada();
+			break;
+		case ROW_SEGUNDO_TURNO_ENTRADA:
+			horarios.setSegundoTurnoEntrada(getHora(linha));
+			entradaSegundoTurnoAlterada();
+			break;
+		case ROW_SEGUNDO_TURNO_SAIDA:
+			horarios.setSegundoTurnoSaida(getHora(linha));
+			saidaSegundoTurnoAlterada();
+			break;
+		case ROW_PRIMEIRO_TURNO_EXTRA_ENTRADA:
+			horarios.setPrimeiroTurnoExtraEntrada(getHora(linha));
+			entradaPrimeiroTurnoExtraAlterada();
+			break;
+		case ROW_PRIMEIRO_TURNO_EXTRA_SAIDA:
+			horarios.setPrimeiroTurnoExtraSaida(getHora(linha));
+			saidaPrimeiroTurnoExtraAlterada();
+			break;
+		case ROW_SEGUNDO_TURNO_EXTRA_ENTRADA:
+			horarios.setSegundoTurnoExtraEntrada(getHora(linha));
+			entradaSegundoTurnoExtraAlterada();
+			break;
+		case ROW_SEGUNDO_TURNO_EXTRA_SAIDA:
+			horarios.setSegundoTurnoExtraSaida(getHora(linha));
+			saidaSegundoTurnoExtraAlterada();
+			break;
 		}
 		horarios.notifyObservers();
 		atualizarView(horarios);
@@ -580,7 +598,7 @@ public class AlarmEditor extends Observable {
 
 	private void saidaSegundoTurnoAlterada() {
 		int min = horarios.getSaida(Turnos.Segundo);
-		min += 15;
+		min += getMinutosIntervalo();
 		horarios.setEntrada(Turnos.PrimeiroExtra, min);
 		entradaPrimeiroTurnoExtraAlterada();
 	}
@@ -591,6 +609,7 @@ public class AlarmEditor extends Observable {
 
 	/**
 	 * Setar os minutos acumuldados na tabela.
+	 *
 	 * @param row
 	 * @param duracao
 	 */
@@ -605,5 +624,3 @@ public class AlarmEditor extends Observable {
 	}
 
 }
-
-

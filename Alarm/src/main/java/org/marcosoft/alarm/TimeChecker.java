@@ -17,7 +17,10 @@ public class TimeChecker extends Observable implements Runnable {
 		this.horarios = horarios;
 	}
 
-	@Override
+	public void resetAlarmados() {
+		/* 21 */ this.alarmados.clear();
+	}
+
 	public void run() {
 		for (;;) {
 			final int minutosCorrente = HoraUtils.getHoraCorrenteEmMinutos();
@@ -38,16 +41,16 @@ public class TimeChecker extends Observable implements Runnable {
 	}
 
 	private void registrarAlarme(int proximoAlarme) {
-	    alarmados.put(getChaveAlarmados(proximoAlarme), true);
-    }
+		alarmados.put(getChaveAlarmados(proximoAlarme), true);
+	}
 
 	private String getChaveAlarmados(int proximoAlarme) {
-	    return HoraUtils.dataAtualAsString() + proximoAlarme;
-    }
+		return HoraUtils.dataAtualAsString() + proximoAlarme;
+	}
 
 	private boolean isJaAlarmado(int proximoAlarme) {
-	    return alarmados.get(getChaveAlarmados(proximoAlarme)) == null;
-    }
+		return alarmados.get(getChaveAlarmados(proximoAlarme)) == null;
+	}
 
 	@Override
 	public void notifyObservers(Object arg) {

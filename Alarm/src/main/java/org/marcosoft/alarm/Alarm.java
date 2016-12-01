@@ -1,14 +1,13 @@
 package org.marcosoft.alarm;
+
 import java.util.Observable;
 import java.util.Observer;
 
-import org.marcosoft.alarm.po.LoginPage;
-import org.marcosoft.alarm.selenium.SeleniumSupport;
-import org.marcosoft.util.ApplicationProperties;
-import org.marcosoft.util.PropertiesEditor;
-import org.marcosoft.util.WaitWindow;
-import org.openqa.selenium.WebDriver;
-
+import org.marcosoft.lib.App;
+import org.marcosoft.lib.ApplicationProperties;
+import org.marcosoft.lib.Exec;
+import org.marcosoft.lib.PropertiesEditor;
+import org.marcosoft.lib.SoftwareUpdate;
 
 public class Alarm implements Observer {
 
@@ -18,8 +17,7 @@ public class Alarm implements Observer {
 
 	public static final String DEFAULT_BEEPER_TIMES = "20";
 	public static final String DEFAULT_BEEPER_PAUSE = "3000";
-	private static final String DEFAULT_BEEPER_COMMAND =
-		"/usr/bin/beep -f 4000 -l 70 -n -f 3000 -l 70 -n -f 4000 -l 70 -n -f 3000 -l 70 -n -f 4000 -l 70 -n -f 3000 -l 70";
+	private static final String DEFAULT_BEEPER_COMMAND = "/usr/bin/beep -f 4000 -l 70 -n -f 3000 -l 70 -n -f 4000 -l 70 -n -f 3000 -l 70 -n -f 4000 -l 70 -n -f 3000 -l 70";
 
 	private final TimeChecker timeChecker;
 	private final Beeper beeper;
@@ -33,15 +31,17 @@ public class Alarm implements Observer {
 	private final AlarmEditor alarmEditor;
 
 	/**
-	* Auto-generated main method to display this JFrame
-	*/
+	 * Auto-generated main method to display this JFrame
+	 */
 	public static void main(String[] args) {
-		new Alarm();
+		new Alarm().main();
 	}
 
 	public Alarm() {
+		final App app = new App("Alarme Ponto");
+		SoftwareUpdate.update(app);
 
-		applicationProperties = new ApplicationProperties("alarme", System.getProperty("user.name"));
+		this.applicationProperties = app.getApplicationProperties();
 		applicationProperties.setDefault(PROPERTY_BEEPER_COMMAND, DEFAULT_BEEPER_COMMAND);
 		applicationProperties.setDefault(PROPERTY_BEEPER_PAUSE, DEFAULT_BEEPER_PAUSE);
 		applicationProperties.setDefault(PROPERTY_BEEPER_TIMES, DEFAULT_BEEPER_TIMES);
@@ -51,7 +51,7 @@ public class Alarm implements Observer {
 
 		horarios.addObserver(this);
 
-		alarmEditor = new AlarmEditor(horarios);
+		alarmEditor = new AlarmEditor(app, horarios);
 		alarmEditor.addObserver(this);
 
 		beeper = new Beeper(beepConfig);
@@ -59,18 +59,20 @@ public class Alarm implements Observer {
 		timeChecker = new TimeChecker(horarios);
 		timeChecker.addObserver(this);
 
+	}
+
+	private void main() {
 		final Thread thread = new Thread(timeChecker);
 		thread.setDaemon(true);
 		thread.start();
-
 	}
 
-	@Override
 	public void update(Observable o, Object arg) {
 		if (o instanceof TimeChecker) {
 			final Integer segundos = (Integer) arg;
 			if (segundos == 0) {
 				alarmEditor.mostrarMensagemAlarme();
+				openSiscop();
 				beeper.beep();
 			} else {
 				alarmEditor.mostrarProximoAlarme(segundos);
@@ -90,32 +92,19 @@ public class Alarm implements Observer {
 			} else if ("OPCOES".equals(cmd)) {
 				new PropertiesEditor(applicationProperties, new Validator(), PROPERTY_BEEPER_COMMAND,
 						PROPERTY_BEEPER_PAUSE, PROPERTY_BEEPER_TIMES);
-			} else if ("SISCOP".equals(cmd)) {
-				openSiscop();
 			}
 
 		} else if (o instanceof Horarios) {
 			salvarHorarios();
+			timeChecker.resetAlarmados();
 		}
 	}
 
 	private void openSiscop() {
-		final String browserUrl = "http://siscop.portalcorporativo.serpro";
-		final WaitWindow waitWindow = new WaitWindow("Iniciando Selenium:" + browserUrl);
-		new Thread() {
-			@Override
-			public void run() {
-				try {
-					final WebDriver driver =
-							SeleniumSupport.initSelenium(browserUrl);
-					final LoginPage loginPage = new LoginPage(driver);
-					loginPage.login(System.getProperty("user.name"));
-				} finally {
-					waitWindow.dispose();
-				}
-			}
-		}.start();
-    }
+		final String urlSiscop = System.getProperty("alarm.url.siscop", "http://siscop.portalcorporativo.serpro");
+		final String browser = System.getProperty("alarm.browser", "firefox");
+		Exec.exe(browser, urlSiscop);
+	}
 
 	private BeepConfig carregarConfiguracoesBeep() {
 		final String command = applicationProperties.getProperty(PROPERTY_BEEPER_COMMAND);
@@ -156,5 +145,3 @@ public class Alarm implements Observer {
 	}
 
 }
-
-

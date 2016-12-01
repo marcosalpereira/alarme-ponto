@@ -1,0 +1,5 @@
+Versão 0.12 
+    - Open Siscop.
+
+Versão 0.11 
+    - Auto Update.

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Implementation-Title: alarm
+Jar-Name: alarm
+Implementation-Version: 0.11
+Archiver-Version: Plexus Archiver
+Built-By: 54706424372
+Update-Host: http://siscon.fla.serpro
+Implementation-Vendor-Id: org.marcosoft.alarm
+Created-By: Apache Maven 3.3.9
+Build-Jdk: 1.8.0_101
+Main-Class: org.marcosoft.alarm.Alarm
+App-Name: alarm
+

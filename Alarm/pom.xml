@@ -4,108 +4,97 @@
 	<groupId>org.marcosoft.alarm</groupId>
 	<artifactId>alarm</artifactId>
 	<name>alarm</name>
-	<version>0.7</version>
+	<version>0.12</version>
 
-	<build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
+	<build> 
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<encoding>ISO-8859-1</encoding>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
 
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2-beta-5</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <outputDirectory>${basedir}/dist/version-${project.version}</outputDirectory>
-                    <appendAssemblyId>false</appendAssemblyId>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<outputDirectory>${basedir}/dist/version-${project.version}</outputDirectory>
+					<appendAssemblyId>false</appendAssemblyId>
 
-                    <archive>
-                        <manifest>
-                            <mainClass>org.marcosoft.alarm.Alarm</mainClass>
-                        </manifest>
-                        <manifestEntries>
-                            <version>${project.version}</version>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- append to the packaging phase. -->
-                        <goals>
-                            <goal>single</goal> <!-- goals == mojos -->
-                        </goals>
-                    </execution>
-                </executions>
-                
-            </plugin>
+					<archive>
+						<manifest>
+							<mainClass>org.marcosoft.alarm.Alarm</mainClass>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Jar-Name>${project.artifactId}</Jar-Name>
+							<App-Name>${project.name}</App-Name>
+							<Update-Host>http://siscon.fla.serpro</Update-Host>
+						</manifestEntries>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- append to the packaging phase. -->
+						<goals>
+							<goal>single</goal> <!-- goals == mojos -->
+						</goals>
+					</execution>
+				</executions>
 
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.5</version>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/dist/version-${project.version}</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/config</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-                
-        </plugins>	
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.5</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<encoding>ISO-8859-1</encoding>						
+							<outputDirectory>${basedir}/dist/version-${project.version}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/config</directory>
+								</resource>
+								<resource>
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>*</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 	</build>
+
 	<dependencies>
-    <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-server</artifactId>
-            <version>2.44.0</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <version>2.44.0</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>selenium-htmlunit-driver</artifactId>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>selenium-android-driver</artifactId>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>selenium-iphone-driver</artifactId>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>selenium-safari-driver</artifactId>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>selenium-support</artifactId>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-	
+		<dependency>
+			<groupId>org.marcosoft</groupId>
+			<artifactId>commons</artifactId>
+			<version>0.1</version>
+		</dependency>
 	</dependencies>
 </project>

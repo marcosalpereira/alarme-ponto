@@ -10,13 +10,13 @@ import javax.swing.JOptionPane;
 public class Beeper {
 
 	private BeepConfig beepConfig;
-	
+
 	private boolean toStop;
 
 	public Beeper(BeepConfig beepConfig) {
 		this.beepConfig = beepConfig;
 	}
-	
+
 	public void stop() {
 		this.toStop = true;
 	}
@@ -28,13 +28,13 @@ public class Beeper {
 				try {
 					execute(beepConfig.getCommand());
 				} catch (Exception e) {
-					JOptionPane.showMessageDialog(null,
-							"I can't beep! " + e.getMessage());
+					JOptionPane.showMessageDialog(null, "I can't beep! " + e.getMessage());
 					break;
 				}
 			}
 			sleep(beepConfig.getPause());
-			if (toStop) break;
+			if (toStop)
+				break;
 		}
 	}
 
@@ -48,12 +48,13 @@ public class Beeper {
 
 	/**
 	 * Executa o comando e espera pelo termino do processo.
-	 * @param command comando
+	 * 
+	 * @param command
+	 *            comando
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private void execute(String command) throws IOException,
-			InterruptedException {
+	private void execute(String command) throws IOException, InterruptedException {
 		Process process = Runtime.getRuntime().exec(command);
 		process.waitFor();
 	}

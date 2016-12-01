@@ -5,26 +5,35 @@ import java.util.Observable;
 import org.marcosoft.util.HoraUtils;
 
 public class Horarios extends Observable {
-	public enum Turnos { Primeiro, Segundo, PrimeiroExtra, SegundoExtra };
-	public enum TipoHora { Entrada, Saida };
-	
+	public enum Turnos {
+		Primeiro, Segundo, PrimeiroExtra, SegundoExtra
+	}
+
+	public enum TipoHora {
+		Entrada, Saida
+	}
+
 	private String[] horarios = new String[Turnos.values().length * TipoHora.values().length];
 	private int[] horariosEmMinutos = new int[Turnos.values().length * TipoHora.values().length];
-	
+
 	public int getEntrada(Turnos turno) {
 		return getMinutos(turno, TipoHora.Entrada);
-	}	
+	}
+
 	private int getMinutos(Turnos turno, TipoHora tipoHora) {
 		return horariosEmMinutos[turno.ordinal() * 2 + tipoHora.ordinal()];
 	}
+
 	private void setMinutos(Turnos turno, TipoHora tipoHora, int min) {
-		horariosEmMinutos[turno.ordinal()*2 +tipoHora.ordinal()] = min;
-		horarios[turno.ordinal()*2 +tipoHora.ordinal()] = HoraUtils.formatHoras(min);
+		horariosEmMinutos[turno.ordinal() * 2 + tipoHora.ordinal()] = min;
+		horarios[turno.ordinal() * 2 + tipoHora.ordinal()] = HoraUtils.formatHoras(min);
 	}
+
 	private void setHora(Turnos turno, TipoHora tipoHora, String hora) {
-		horariosEmMinutos[turno.ordinal()*2 +tipoHora.ordinal()] = HoraUtils.parseMinutos(hora);
-		horarios[turno.ordinal()*2 + tipoHora.ordinal()] = hora;
+		horariosEmMinutos[turno.ordinal() * 2 + tipoHora.ordinal()] = HoraUtils.parseMinutos(hora);
+		horarios[turno.ordinal() * 2 + tipoHora.ordinal()] = hora;
 	}
+
 	private String getHora(Turnos turno, TipoHora tipoHora) {
 		return horarios[turno.ordinal() * 2 + tipoHora.ordinal()];
 	}
@@ -32,14 +41,14 @@ public class Horarios extends Observable {
 	public int getSaida(Turnos turno) {
 		return getMinutos(turno, TipoHora.Saida);
 	}
-	
+
 	public void setSaida(Turnos turno, int min) {
 		setMinutos(turno, TipoHora.Saida, min);
 	}
-	
+
 	public void setEntrada(Turnos turno, int min) {
 		setMinutos(turno, TipoHora.Entrada, min);
-	}	
+	}
 
 	public void setPrimeiroTurnoEntrada(String primeiroTurnoEntrada) {
 		setHora(Turnos.Primeiro, TipoHora.Entrada, primeiroTurnoEntrada);
@@ -104,8 +113,8 @@ public class Horarios extends Observable {
 	public String getSegundoTurnoExtraSaida() {
 		return getHora(Turnos.SegundoExtra, TipoHora.Saida);
 	}
-	
-	public int getProximoAlarme(int minCorrente) {				
+
+	public int getProximoAlarme(int minCorrente) {
 		for (int min : horariosEmMinutos) {
 			if (min >= minCorrente) {
 				return min;
@@ -113,32 +122,31 @@ public class Horarios extends Observable {
 		}
 		return -1;
 	}
-	
+
 	public String[] asArray() {
 		return horarios;
 	}
-	
+
 	@Override
 	public void notifyObservers() {
 		setChanged();
 		super.notifyObservers();
 	}
-	
+
 	public int getDuracaoPrimeiroTurno() {
-		return getSaida(Turnos.Primeiro)- getEntrada(Turnos.Primeiro);
-	}
-	
-	public int getDuracaoSegundoTurno() {
-		return getSaida(Turnos.Segundo)- getEntrada(Turnos.Segundo);
-	}
-	
-	public int getDuracaoPrimeiroTurnoExtra() {
-		return getSaida(Turnos.PrimeiroExtra)- getEntrada(Turnos.PrimeiroExtra);
-	}
-	
-	public int getDuracaoSegundoTurnoExtra() {
-		return getSaida(Turnos.SegundoExtra)- getEntrada(Turnos.SegundoExtra);
+		return getSaida(Turnos.Primeiro) - getEntrada(Turnos.Primeiro);
 	}
 
-	
+	public int getDuracaoSegundoTurno() {
+		return getSaida(Turnos.Segundo) - getEntrada(Turnos.Segundo);
+	}
+
+	public int getDuracaoPrimeiroTurnoExtra() {
+		return getSaida(Turnos.PrimeiroExtra) - getEntrada(Turnos.PrimeiroExtra);
+	}
+
+	public int getDuracaoSegundoTurnoExtra() {
+		return getSaida(Turnos.SegundoExtra) - getEntrada(Turnos.SegundoExtra);
+	}
+
 }
