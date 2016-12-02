@@ -18,7 +18,7 @@ public class TimeChecker extends Observable implements Runnable {
 	}
 
 	public void resetAlarmados() {
-		/* 21 */ this.alarmados.clear();
+		 this.alarmados.clear();
 	}
 
 	public void run() {
