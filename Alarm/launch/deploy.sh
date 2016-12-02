@@ -7,14 +7,14 @@ zip binario.zip *
 
 workRoot=/tmp/ml-deploy.tmp
 downloadDir=${workRoot}/download
-workDir=/v${version}
+workDir=${downloadDir}/v${version}
 
 mkdir -p ${workRoot}
 rm -vrf ${workRoot}/*
 mkdir -p ${workDir}
 
 mv binario.zip ${workDir}
-echo "/marcosalpereira/alarm/releases/download/v${version}/binario.zip" > ${workDir}/latest
+echo "/marcosalpereira/alarm/releases/download/v${version}/binario.zip" > ${downloadDir}/latest
 
 cd ${workRoot}
 scp -r * root@siscon.fla.serpro:/var/www/html/marcosalpereira/alarm/releases
