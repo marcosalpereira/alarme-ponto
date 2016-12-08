@@ -1,3 +1,6 @@
+Versão 0.13 
+    - Melhorias update.
+
 Versão 0.12 
     - Open Siscop.
 

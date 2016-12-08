@@ -1,5 +1,6 @@
 package org.marcosoft.alarm;
 
+import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -9,7 +10,7 @@ import org.marcosoft.lib.Exec;
 import org.marcosoft.lib.PropertiesEditor;
 import org.marcosoft.lib.SoftwareUpdate;
 
-public class Alarm implements Observer {
+public class Alarm extends App implements Observer {
 
 	public static final String PROPERTY_BEEPER_PAUSE = "beeper.pause";
 	public static final String PROPERTY_BEEPER_TIMES = "beeper.times";
@@ -34,14 +35,14 @@ public class Alarm implements Observer {
 	 * Auto-generated main method to display this JFrame
 	 */
 	public static void main(String[] args) {
-		new Alarm().main();
+		new Alarm(args).main();
 	}
 
-	public Alarm() {
-		final App app = new App("Alarme Ponto");
-		SoftwareUpdate.update(app);
+	public Alarm(String[] args) {
+		super(args, "Alarme Ponto");
+		SoftwareUpdate.update(this);
 
-		this.applicationProperties = app.getApplicationProperties();
+		applicationProperties = getApplicationProperties();
 		applicationProperties.setDefault(PROPERTY_BEEPER_COMMAND, DEFAULT_BEEPER_COMMAND);
 		applicationProperties.setDefault(PROPERTY_BEEPER_PAUSE, DEFAULT_BEEPER_PAUSE);
 		applicationProperties.setDefault(PROPERTY_BEEPER_TIMES, DEFAULT_BEEPER_TIMES);
@@ -51,7 +52,7 @@ public class Alarm implements Observer {
 
 		horarios.addObserver(this);
 
-		alarmEditor = new AlarmEditor(app, horarios);
+		alarmEditor = new AlarmEditor(this, horarios);
 		alarmEditor.addObserver(this);
 
 		beeper = new Beeper(beepConfig);
@@ -103,7 +104,7 @@ public class Alarm implements Observer {
 	private void openSiscop() {
 		final String urlSiscop = System.getProperty("alarm.url.siscop", "http://siscop.portalcorporativo.serpro");
 		final String browser = System.getProperty("alarm.browser", "firefox");
-		Exec.exe(browser, urlSiscop);
+		Exec.exe(browser, Arrays.asList(urlSiscop));
 	}
 
 	private BeepConfig carregarConfiguracoesBeep() {
