@@ -343,12 +343,12 @@ public class AlarmEditor extends Observable {
 							public boolean verify(JComponent input) {
 								final int min = getMinutosSaldo();
 								if (min == Integer.MIN_VALUE) {
-									JOptionPane.showMessageDialog(win, "Valor invÃ¡lido!");
+									JOptionPane.showMessageDialog(win, "Valor inválido!");
 									return false;
 
 								} else if (min >= 8 * 60) {
 									JOptionPane.showMessageDialog(win,
-											"Que Ã© que voÃ§Ãª estÃ¡ fazendo aqui!!! VÃ¡ pra casa!!!!");
+											"Que é que voçê está fazendo aqui!!! Vá pra casa!!!!");
 									return false;
 								}
 								recalcularAlarmes(ROW_SEGUNDO_TURNO_ENTRADA);
@@ -363,7 +363,7 @@ public class AlarmEditor extends Observable {
 
 			this.txtMinutosIntervalo = new JTextField();
 			this.panMinutos.add(this.txtMinutosIntervalo);
-			this.txtMinutosIntervalo.setToolTipText("Minutos de intervalo para horÃ¡rio extra");
+			this.txtMinutosIntervalo.setToolTipText("Minutos de intervalo para horário extra");
 			this.txtMinutosIntervalo.setText("0");
 			this.txtMinutosIntervalo.setBorder(javax.swing.BorderFactory.createLoweredBevelBorder());
 			this.txtMinutosIntervalo.setPreferredSize(new Dimension(52, 22));
@@ -372,7 +372,7 @@ public class AlarmEditor extends Observable {
 				public boolean verify(javax.swing.JComponent input) {
 					final int min = AlarmEditor.this.getMinutosIntervalo();
 					if (min < 0) {
-						JOptionPane.showMessageDialog(AlarmEditor.this.win, "Valor invÃ¡lido!");
+						JOptionPane.showMessageDialog(AlarmEditor.this.win, "Valor inválido!");
 						return false;
 					}
 					AlarmEditor.this.recalcularAlarmes(4);
@@ -389,14 +389,14 @@ public class AlarmEditor extends Observable {
 
 				{
 					final TableModel tblHorariosModel = new DefaultTableModel(
-							new Object[][] { { "1Âº PerÃ­odo - Entrada", "00:00", "" },
-									{ "1Âº PerÃ­odo - SaÃ­da", "00:00", "" }, { "", "", "" },
-									{ "2Âº PerÃ­odo - Entrada", "00:00", "" }, { "2Âº PerÃ­odo - SaÃ­da", "00:00", "" },
-									{ "", "", "" }, { "1Âº PerÃ­odo - Extra - Entrada", "00:00", "" },
-									{ "1Âº PerÃ­odo - Extra - SaÃ­da", "00:00", "" }, { "", "", "" },
-									{ "2Âº PerÃ­odo - Extra - Entrada", "00:00", "" },
-									{ "2Âº PerÃ­odo - Extra - SaÃ­da", "00:00", "" }, },
-							new String[] { "PerÃ­odo", "Hora", "DuraÃ§Ã£o (Acumulado)" });
+							new Object[][] { { "1º Período - Entrada", "00:00", "" },
+									{ "1º Período - Saída", "00:00", "" }, { "", "", "" },
+									{ "2º Período - Entrada", "00:00", "" }, { "2º Período - Saída", "00:00", "" },
+									{ "", "", "" }, { "1º Período - Extra - Entrada", "00:00", "" },
+									{ "1º Período - Extra - Saída", "00:00", "" }, { "", "", "" },
+									{ "2º Período - Extra - Entrada", "00:00", "" },
+									{ "2º Período - Extra - Saída", "00:00", "" }, },
+							new String[] { "Período", "Hora", "Duração (Acumulado)" });
 
 					tblHorarios = new JTable() {
 						private static final long serialVersionUID = 1L;
@@ -447,7 +447,7 @@ public class AlarmEditor extends Observable {
 					});
 
 					btnOpcoes = new JButton();
-					btnOpcoes.setText("OpÃ§Ãµes");
+					btnOpcoes.setText("Opções");
 					btnOpcoes.setPreferredSize(new java.awt.Dimension(100, 22));
 					btnOpcoes.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent evt) {
@@ -510,7 +510,7 @@ public class AlarmEditor extends Observable {
 		lblMessage.setVisible(true);
 		lblMessage.setBackground(new Color(225, 225, 225));
 		lblMessage.setForeground(new java.awt.Color(0, 0, 0));
-		lblMessage.setText("PrÃ³ximo Alarme em: " + formatHorasSegundos(segundos));
+		lblMessage.setText("Próximo Alarme em: " + formatHorasSegundos(segundos));
 	}
 
 	@Override
@@ -533,14 +533,14 @@ public class AlarmEditor extends Observable {
 			final int m = Integer.parseInt(split[1]);
 
 			if (!(h >= 0 && h <= 23)) {
-				throw new NumberFormatException("Hora invÃ¡lida!");
+				throw new NumberFormatException("Hora inválida!");
 			}
 			if (!(m >= 0 && m <= 59)) {
-				throw new NumberFormatException("Minutos invÃ¡lidos!");
+				throw new NumberFormatException("Minutos inválidos!");
 			}
 			return h * 60 + m;
 		} catch (final NumberFormatException e) {
-			throw new NumberFormatException("Valor invÃ¡lido!");
+			throw new NumberFormatException("Valor inválido!");
 		}
 
 	}

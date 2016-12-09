@@ -1,6 +1,14 @@
 #!/bin/bash
 
 mavenExec=$1
+versionType=$2
+
+app=alarm
+
+if [ "${versionType}" != "latest" ] && [ "${versionType}" != "beta" ]; then
+    echo "Versao tem que ser latest ou beta!"
+    exit 1   
+fi
 
 pwd
 
@@ -21,20 +29,21 @@ fi
 
 cd version-*
 
+currentDir=$(pwd)
+filename=$(basename $currentDir)
+version="${filename##*-}"
+
 zip binario.zip *
-
-workRoot=/tmp/ml-deploy.tmp
-downloadDir=${workRoot}/download
-workDir=${downloadDir}/v${version}
-
-mkdir -p ${workRoot}
 
 rm -vrf /tmp/ml-deploy.tmp/*
 
-mkdir -p ${workDir}
+workRoot=/tmp/ml-deploy.tmp
+releasesDir=${workRoot}/marcosalpereira/${app}/releases
+downloadDir=${releasesDir}/download
+mkdir -p ${downloadDir}/v${version}
 
-mv binario.zip ${workDir}
-echo "/marcosalpereira/alarm/releases/download/v${version}/binario.zip" > ${downloadDir}/latest
+mv binario.zip ${downloadDir}/v${version}
+echo "/marcosalpereira/$app/releases/download/v${version}/binario.zip" > ${releasesDir}/$versionType
 
 cd ${workRoot}
-#scp -r * root@siscon.fla.serpro:/var/www/html/marcosalpereira/alarm/releases
+scp -r * root@siscon.fla.serpro:/var/www/html

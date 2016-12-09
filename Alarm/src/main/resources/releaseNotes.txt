@@ -1,8 +1,8 @@
-Vers√£o 0.13 
+Vers„o 0.13 
     - Melhorias update.
 
-Vers√£o 0.12 
+Vers„o 0.12 
     - Open Siscop.
 
-Vers√£o 0.11 
+Vers„o 0.11 
     - Auto Update.
