@@ -504,6 +504,8 @@ public class AlarmEditor extends Observable {
 		lblMessage.setText("Alarme: " + getHoraCorrente());
 		win.setAlwaysOnTop(true);
 		win.setExtendedState(Frame.NORMAL);
+		win.repaint();
+		win.validate();
 	}
 
 	public void mostrarProximoAlarme(int segundos) {
