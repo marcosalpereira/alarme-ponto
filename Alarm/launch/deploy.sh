@@ -38,12 +38,12 @@ zip binario.zip *
 rm -vrf /tmp/ml-deploy.tmp/*
 
 workRoot=/tmp/ml-deploy.tmp
-releasesDir=${workRoot}/marcosalpereira/${app}/releases
+releasesDir=${workRoot}/.marcosalpereira/${app}/releases
 downloadDir=${releasesDir}/download
 mkdir -p ${downloadDir}/v${version}
 
 mv binario.zip ${downloadDir}/v${version}
-echo "/marcosalpereira/$app/releases/download/v${version}/binario.zip" > ${releasesDir}/$versionType
+echo "/.marcosalpereira/$app/releases/download/v${version}/binario.zip" > ${releasesDir}/$versionType
 
 cd ${workRoot}
-scp -r * root@siscon.fla.serpro:/var/www/html
+scp -r ./. root@siscon.fla.serpro:/var/www/html

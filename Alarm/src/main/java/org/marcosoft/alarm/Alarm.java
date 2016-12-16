@@ -90,6 +90,9 @@ public class Alarm extends App implements Observer {
 			} else if ("MUTE_OFF".equals(cmd)) {
 				beepConfig.setMute(false);
 
+			} else if ("SISCOP".equals(cmd)) {
+			    openSiscop();;
+
 			} else if ("OPCOES".equals(cmd)) {
 				new PropertiesEditor(applicationProperties, new Validator(), PROPERTY_BEEPER_COMMAND,
 						PROPERTY_BEEPER_PAUSE, PROPERTY_BEEPER_TIMES);

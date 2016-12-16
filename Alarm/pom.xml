@@ -4,7 +4,7 @@
 	<groupId>org.marcosoft.alarm</groupId>
 	<artifactId>alarm</artifactId>
 	<name>alarm</name>
-	<version>0.14</version>
+	<version>0.15</version>
 
 	<build> 
 		<plugins>
@@ -36,6 +36,7 @@
 							<Jar-Name>${project.artifactId}</Jar-Name>
 							<App-Name>${project.name}</App-Name>
 							<Update-Host>http://siscon.fla.serpro</Update-Host>
+							<Update-Folder>.marcosalpereira</Update-Folder>
 						</manifestEntries>
 					</archive>
 				</configuration>
