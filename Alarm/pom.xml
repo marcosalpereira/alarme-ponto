@@ -4,7 +4,7 @@
 	<groupId>org.marcosoft.alarm</groupId>
 	<artifactId>alarm</artifactId>
 	<name>alarm</name>
-	<version>0.15</version>
+	<version>0.16</version>
 
 	<build> 
 		<plugins>
@@ -86,7 +86,7 @@
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
+				<filtering>false</filtering>
 			</resource>
 		</resources>
 	</build>

@@ -1,3 +1,6 @@
+Versão 0.16
+    - Tocar som também no sistema de som. 
+
 Versão 0.13 
     - Melhorias update.
 
