@@ -59,6 +59,7 @@ public class Beeper {
                 final InputStream stream = Beeper.class.getResourceAsStream("/alert.wav");
                 alertBytes = new ByteArrayInputStream(IOUtils.readContent(stream));
             }
+            alertBytes.reset();
             AudioUtils.playClip(alertBytes);
         } catch (final Exception e) {
             e.printStackTrace();
