@@ -161,13 +161,17 @@ public class AlarmEditor extends Observable {
 	}
 
 	private void btnOkActionPerformed(ActionEvent evt) {
-		win.setExtendedState(Frame.ICONIFIED);
-		win.setAlwaysOnTop(false);
-		lblMessage.setVisible(false);
+		minimize();
 		notifyObservers("OK");
 	}
 
+    private void minimize() {
+        win.toBack();
+		lblMessage.setVisible(false);
+    }
+
 	private void btnSiscopActionPerformed(ActionEvent evt) {
+	    minimize();
 		notifyObservers("SISCOP");
 	}
 
@@ -502,7 +506,7 @@ public class AlarmEditor extends Observable {
 		lblMessage.setBackground(Color.red);
 		lblMessage.setForeground(new java.awt.Color(255, 255, 255));
 		lblMessage.setText("Alarme: " + getHoraCorrente());
-		win.setAlwaysOnTop(true);
+		win.toFront();
 		win.setExtendedState(Frame.NORMAL);
 		win.repaint();
 		win.validate();

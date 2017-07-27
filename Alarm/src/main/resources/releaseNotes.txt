@@ -1,3 +1,6 @@
+Versão 0.18
+    - Não abrir siscop ao alarmar
+
 Versão 0.16
     - Tocar som também no sistema de som. 
 

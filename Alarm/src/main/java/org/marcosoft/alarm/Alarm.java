@@ -73,7 +73,6 @@ public class Alarm extends App implements Observer {
 			final Integer segundos = (Integer) arg;
 			if (segundos == 0) {
 				alarmEditor.mostrarMensagemAlarme();
-				openSiscop();
 				beeper.beep();
 			} else {
 				alarmEditor.mostrarProximoAlarme(segundos);
@@ -105,6 +104,7 @@ public class Alarm extends App implements Observer {
 	}
 
 	private void openSiscop() {
+	    beeper.stop();
 		final String urlSiscop = System.getProperty("alarm.url.siscop", "http://siscop.portalcorporativo.serpro");
 		final String browser = System.getProperty("alarm.browser", "firefox");
 		Exec.exe(browser, Arrays.asList(urlSiscop));
